@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f1eb;
+  --foreground: #1f2a26;
+  --ink: #1f2a26;
+  --ink-soft: #40514a;
+  --muted: #78817b;
+  --line: #dedbd3;
+  --surface: #fffdf8;
+  --surface-soft: #ebe9e1;
+  --sage: #c7d6c2;
+  --sage-deep: #456358;
+  --coral: #d7654e;
+  --coral-deep: #af4938;
+  --ochre: #d5a94c;
+  --mist: #e3ece4;
+  --on-light-surface: #1f2a26;
+  --sidebar-background: #1f2a26;
+  --sidebar-foreground: #f7f3ea;
+  --sidebar-muted: #aab7aa;
+  --sidebar-section-label: #9aac9f;
+  --sidebar-active: #f0e9d9;
+  --sidebar-card: #29382f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--background);
+}
+
+body {
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(215, 101, 78, 0.11), transparent 28rem),
+    radial-gradient(circle at 7% 88%, rgba(199, 214, 194, 0.35), transparent 30rem),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a,
+select,
+input,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(215, 101, 78, 0.3);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(215, 101, 78, 0.22);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c2c8c0;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #929d95;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.panel {
+  background: rgba(255, 253, 248, 0.94);
+  border: 1px solid var(--line);
+  border-radius: 1.15rem;
+  box-shadow: 0 16px 38px rgba(31, 42, 38, 0.055);
+}
+
+.eyebrow {
+  color: var(--coral-deep);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-rise-in {
+  animation: rise-in 0.45s ease-out both;
+}
+
+@media (max-width: 639px) {
+  .panel { border-radius: 0.95rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.dark {
+  --background: #151b18;
+  --foreground: #f3efe6;
+  --ink: #f3efe6;
+  --ink-soft: #c3cec3;
+  --muted: #9aa99e;
+  --line: #35423a;
+  --surface: #202b25;
+  --surface-soft: #29362f;
+  --sage: #849b83;
+  --sage-deep: #b8cfb7;
+  --coral: #dc7964;
+  --coral-deep: #f0a08e;
+  --ochre: #d9b868;
+  --mist: #2e3c34;
+  --on-light-surface: #1f2a26;
+  --sidebar-background: #101713;
+  --sidebar-foreground: #f3efe6;
+  --sidebar-muted: #b7c4b9;
+  --sidebar-section-label: #a9b8ac;
+  --sidebar-active: #f0e9d9;
+  --sidebar-card: #1c2821;
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at 92% 0%, rgba(215, 101, 78, 0.12), transparent 28rem),
+    radial-gradient(circle at 7% 88%, rgba(132, 155, 131, 0.16), transparent 30rem),
+    var(--background);
+}
+
+.dark .panel {
+  background: rgba(32, 43, 37, 0.95);
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700 {
+  color: var(--ink);
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: var(--muted);
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200 {
+  border-color: var(--line);
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-100 {
+  background-color: var(--surface-soft);
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  color-scheme: dark;
+}
+
+/* White utility surfaces remain light in dark mode, so every text treatment inside them must use dark ink. */
+.dark .bg-white,
+.dark .bg-white\/90,
+.dark .bg-white\/80,
+.dark .bg-white\/\[0\.04\],
+.dark .bg-white\/\[0\.06\] {
+  background-color: #fff;
+  color: var(--on-light-surface);
+}
+
+.dark .bg-white .text-slate-900,
+.dark .bg-white .text-slate-800,
+.dark .bg-white .text-slate-700,
+.dark .bg-white .text-slate-600,
+.dark .bg-white .text-slate-500,
+.dark .bg-white .text-\[var\(--ink\)\],
+.dark .bg-white .text-\[var\(--muted\)\],
+.dark .bg-white .text-white,
+.dark .bg-white\/90 .text-\[var\(--ink\)\],
+.dark .bg-white\/90 .text-\[var\(--muted\)\],
+.dark .bg-white\/80 .text-\[var\(--ink\)\],
+.dark .bg-white\/80 .text-\[var\(--muted\)\] {
+  color: var(--on-light-surface);
+}
+
+.dark .bg-white input,
+.dark .bg-white textarea,
+.dark .bg-white select {
+  color: #1f2a26;
+  background-color: #fff;
+}
