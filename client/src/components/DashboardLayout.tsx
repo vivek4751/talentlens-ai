@@ -50,7 +50,9 @@ export default function DashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const menu = role === "recruiter" ? recruiterMenu : candidateMenu;
   const roleName = role === "recruiter" ? "Recruiter" : "Candidate";
-  const profileName = role === "recruiter" ? "Ari Morgan" : "Maia Patel";
+  const profile = role === "recruiter"
+    ? { name: "Ari Morgan", title: "Recruitment Lead", initials: "AM" }
+    : { name: "Maia Patel", title: "Senior Product Designer", initials: "MP" };
 
   const navigate = (path: string) => {
     setLocation(path);
@@ -94,10 +96,11 @@ export default function DashboardLayout({
 
         <div className="sidebar-bottom">
           <div className="profile-block">
-            <div className="avatar-block">{profileName.split(" ").map((part) => part[0]).join("")}</div>
+            <div className="avatar-block">{profile.initials}</div>
             <div>
-              <p>{profileName}</p>
-              <span>{roleName} workspace</span>
+              <p>{profile.name}</p>
+              <span>{profile.title} · Demo account</span>
+              <small className="demo-account">Fictional interview demo</small>
             </div>
           </div>
           <button className="sidebar-signout" onClick={() => navigate("/login")}>Sign out</button>

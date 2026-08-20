@@ -12,3 +12,6 @@
 - [x] Add responsive interaction states, accessibility affordances, and placeholder feedback where backend actions are not wired.
 - [x] Add Vitest coverage for role-aware navigation and critical UI copy.
 - [x] Verify desktop and mobile rendering, run checks, and save the final checkpoint.
+- [x] Add a clearly fictional recruiter identity with interview-demo context in the workspace sidebar.
+- [x] Add a clearly fictional candidate resume preview with a downloadable interview-demo document.
+- [x] Verify the demo identities, candidate profile flow, and resume document presentation.

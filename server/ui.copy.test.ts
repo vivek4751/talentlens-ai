@@ -26,4 +26,10 @@ describe("TalentLens recruitment workspace UI", () => {
     expect(layoutSource).toContain("const candidateMenu");
     expect(layoutSource).toContain("role === \"recruiter\" ? recruiterMenu : candidateMenu");
   });
+
+  it("keeps interview-demo identities visibly marked as fictional and links the demo resume", () => {
+    expect(appSource).toContain("Fictional interview-demo profile");
+    expect(appSource).toContain("maia-patel-interview-demo-resume_616e5d05.pdf");
+    expect(layoutSource).toContain("Fictional interview demo");
+  });
 });
