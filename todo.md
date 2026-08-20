@@ -15,3 +15,6 @@
 - [x] Add a clearly fictional recruiter identity with interview-demo context in the workspace sidebar.
 - [x] Add a clearly fictional candidate resume preview with a downloadable interview-demo document.
 - [x] Verify the demo identities, candidate profile flow, and resume document presentation.
+- [x] Add six clearly fictional, distinct candidate records with candidate-specific profile views.
+- [x] Add a visible recruiter-demo switcher with six clearly fictional recruiter identities.
+- [x] Verify candidate and recruiter switching across the expanded interview-demo roster.

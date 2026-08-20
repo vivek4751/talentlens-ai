@@ -32,4 +32,23 @@ describe("TalentLens recruitment workspace UI", () => {
     expect(appSource).toContain("maia-patel-interview-demo-resume_616e5d05.pdf");
     expect(layoutSource).toContain("Fictional interview demo");
   });
+
+  it("contains six fictional candidates and six recruiter demo identities", () => {
+    for (const name of ["Maia Patel", "Emre Kaya", "Noah Williams", "Ava Chen", "Luca Rossi", "Priya Nair"]) {
+      expect(appSource).toContain(name);
+    }
+    for (const name of ["Ari Morgan", "Sofia Mendes", "Theo Brooks", "Nadia Iqbal", "Jon Bell", "Keiko Tan"]) {
+      expect(appSource).toContain(name);
+    }
+    expect(layoutSource).toContain("fictional demo profiles available");
+    expect(layoutSource).toContain("personas.length");
+  });
+
+  it("wires recruiter and candidate persona selectors into distinct profile-switching flows", () => {
+    expect(layoutSource).toContain("onChange={(event) => switchPersona(event.target.value)}");
+    expect(layoutSource).toContain("onRecruiterChange(id)");
+    expect(layoutSource).toContain("onCandidateChange(id)");
+    expect(layoutSource).toContain("navigate(\"/profile\")");
+    expect(appSource).toContain("activeCandidateId={activeCandidateId}");
+  });
 });

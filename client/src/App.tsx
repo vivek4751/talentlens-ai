@@ -1,4 +1,4 @@
-import DashboardLayout, { type WorkspaceRole } from "@/components/DashboardLayout";
+import DashboardLayout, { type DemoPersona, type WorkspaceRole } from "@/components/DashboardLayout";
 import {
   AlertTriangle,
   ArrowDownRight,
@@ -34,7 +34,7 @@ import {
   X,
 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
-import { Route, Switch, useLocation } from "wouter";
+import { Route, Switch, useLocation, useRoute } from "wouter";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
@@ -45,12 +45,33 @@ const rankings = [
   { rank: "04", name: "Ava Chen", initials: "AC", role: "Interaction Designer", score: 74, semantic: 81, skills: 72, experience: 70, education: 86, availability: 75, status: "Reject", strengths: ["Excellent research rigor", "Strong academic grounding"], gaps: ["Below requested experience band", "Missing B2B SaaS evidence"], note: "Ava has high-quality interaction design fundamentals but does not currently meet the role’s experience threshold.", tags: ["Research", "Interaction", "Accessibility"] },
 ];
 
-const candidates = [
-  { name: "Maia Patel", initials: "MP", title: "Senior Product Designer", location: "Bengaluru, IN", score: 92, tags: ["Figma", "B2B SaaS", "Design systems"], status: "Shortlist" },
-  { name: "Emre Kaya", initials: "EK", title: "Staff Product Designer", location: "Istanbul, TR", score: 86, tags: ["Research", "Enterprise", "Leadership"], status: "Pending" },
-  { name: "Noah Williams", initials: "NW", title: "Product Designer", location: "London, UK", score: 79, tags: ["Mobile", "UX", "Prototyping"], status: "Pending" },
-  { name: "Ava Chen", initials: "AC", title: "Interaction Designer", location: "Singapore", score: 74, tags: ["Accessibility", "Research", "Motion"], status: "Reject" },
-  { name: "Luca Rossi", initials: "LR", title: "UX Designer", location: "Milan, IT", score: 70, tags: ["Fintech", "UX writing", "Figma"], status: "Pending" },
+type DemoCandidate = DemoPersona & {
+  location: string;
+  email: string;
+  score: number;
+  status: string;
+  tags: string[];
+  summary: string;
+  education: { period: string; degree: string; school: string; fit: string };
+  experience: { title: string; org: string; date: string; text: string }[];
+};
+
+const candidates: DemoCandidate[] = [
+  { id: "maia-patel", name: "Maia Patel", initials: "MP", title: "Senior Product Designer", location: "Bengaluru, India", email: "maia.patel.demo@talentlens.example", score: 92, tags: ["Figma", "B2B SaaS", "Design systems"], status: "Shortlist", summary: "Seven years of experience designing high-velocity B2B tools across complex operational workflows. Strong in product strategy, system design, and research synthesis.", education: { period: "2015 — 2019", degree: "B.Des, Interaction Design", school: "National Institute of Design", fit: "95.0 education fit" }, experience: [{ title: "Senior Product Designer", org: "Helio Systems (fictional)", date: "2022 — Present", text: "Led the end-to-end redesign of a workflow product used by 18,000 operations teams." }, { title: "Product Designer", org: "Ledger & Co. (fictional)", date: "2019 — 2022", text: "Built reusable patterns and scaled product discovery practice across two squads." }] },
+  { id: "emre-kaya", name: "Emre Kaya", initials: "EK", title: "Staff Product Designer", location: "Istanbul, Türkiye", email: "emre.kaya.demo@talentlens.example", score: 86, tags: ["Research", "Enterprise", "Leadership"], status: "Pending", summary: "Staff-level product designer experienced in enterprise workflows, discovery programs, and mentoring cross-functional design teams.", education: { period: "2011 — 2015", degree: "B.A., Visual Communication", school: "Marmara Institute (fictional)", fit: "78.0 education fit" }, experience: [{ title: "Staff Product Designer", org: "Atlas Works (fictional)", date: "2021 — Present", text: "Set product design direction for a suite of enterprise operations tools." }, { title: "Lead Product Designer", org: "Northstar Cloud (fictional)", date: "2017 — 2021", text: "Established a customer research program and mentored five designers." }] },
+  { id: "noah-williams", name: "Noah Williams", initials: "NW", title: "Product Designer", location: "London, United Kingdom", email: "noah.williams.demo@talentlens.example", score: 79, tags: ["Mobile", "UX", "Prototyping"], status: "Pending", summary: "Mobile-first product designer with a strong prototyping practice and a record of simplifying customer onboarding journeys.", education: { period: "2014 — 2017", degree: "B.Sc., Digital Product Design", school: "West London College (fictional)", fit: "74.0 education fit" }, experience: [{ title: "Product Designer", org: "Mosaic Mobile (fictional)", date: "2020 — Present", text: "Designed mobile growth flows that improved verified-account completion." }, { title: "UX Designer", org: "Beacon Travel (fictional)", date: "2017 — 2020", text: "Created rapid prototypes and usability studies for booking experiences." }] },
+  { id: "ava-chen", name: "Ava Chen", initials: "AC", title: "Interaction Designer", location: "Singapore", email: "ava.chen.demo@talentlens.example", score: 74, tags: ["Accessibility", "Research", "Motion"], status: "Reject", summary: "Interaction designer specializing in accessible interfaces, design research, and considered motion systems for consumer applications.", education: { period: "2016 — 2020", degree: "B.A., Interaction Design", school: "Meridian Arts School (fictional)", fit: "86.0 education fit" }, experience: [{ title: "Interaction Designer", org: "Studio Finch (fictional)", date: "2022 — Present", text: "Designed accessible interaction patterns for a suite of consumer services." }, { title: "Junior Product Designer", org: "Cedar Labs (fictional)", date: "2020 — 2022", text: "Supported research synthesis, UI refinement, and motion studies." }] },
+  { id: "luca-rossi", name: "Luca Rossi", initials: "LR", title: "UX Designer", location: "Milan, Italy", email: "luca.rossi.demo@talentlens.example", score: 70, tags: ["Fintech", "UX writing", "Figma"], status: "Pending", summary: "UX designer with a fintech and content-design background, known for creating clear information hierarchies in complex customer journeys.", education: { period: "2013 — 2016", degree: "B.A., Communication Design", school: "Milan Design Academy (fictional)", fit: "76.0 education fit" }, experience: [{ title: "UX Designer", org: "Dalia Finance (fictional)", date: "2021 — Present", text: "Simplified onboarding and account-management journeys for a finance app." }, { title: "Content Designer", org: "Studio Linea (fictional)", date: "2016 — 2021", text: "Created product language systems and editorial guidelines for digital products." }] },
+  { id: "priya-nair", name: "Priya Nair", initials: "PN", title: "Service Designer", location: "Toronto, Canada", email: "priya.nair.demo@talentlens.example", score: 83, tags: ["Service design", "Systems", "Workshops"], status: "Shortlist", summary: "Service designer who maps cross-team operating models and turns stakeholder complexity into practical, measurable service improvements.", education: { period: "2012 — 2016", degree: "B.Des, Service Design", school: "Ontario Design Institute (fictional)", fit: "90.0 education fit" }, experience: [{ title: "Service Designer", org: "Civic Loop (fictional)", date: "2020 — Present", text: "Led journey-mapping and service blueprinting work across complex public-service programs." }, { title: "Experience Designer", org: "Field & Form (fictional)", date: "2016 — 2020", text: "Facilitated stakeholder workshops and designed multi-channel service concepts." }] },
+];
+
+const recruiters: DemoPersona[] = [
+  { id: "ari-morgan", name: "Ari Morgan", title: "Recruitment Lead", initials: "AM" },
+  { id: "sofia-mendes", name: "Sofia Mendes", title: "Talent Partner", initials: "SM" },
+  { id: "theo-brooks", name: "Theo Brooks", title: "Hiring Programs Manager", initials: "TB" },
+  { id: "nadia-iqbal", name: "Nadia Iqbal", title: "Senior Technical Recruiter", initials: "NI" },
+  { id: "jon-bell", name: "Jon Bell", title: "People Operations Lead", initials: "JB" },
+  { id: "keiko-tan", name: "Keiko Tan", title: "Director of Talent", initials: "KT" },
 ];
 
 const demoResumeUrl = "/manus-storage/maia-patel-interview-demo-resume_616e5d05.pdf";
@@ -102,17 +123,20 @@ function Candidates() {
   const [filter, setFilter] = useState("All candidates");
   const [, setLocation] = useLocation();
   const filtered = useMemo(() => candidates.filter((candidate) => (filter === "All candidates" || candidate.status === filter) && `${candidate.name} ${candidate.title} ${candidate.tags.join(" ")}`.toLowerCase().includes(query.toLowerCase())), [filter, query]);
-  return <div className="page-wrap"><PageIntro index="03 / CANDIDATES" title="A real view of every profile." description="Search the signals that matter, review context without hunting, and keep every decision traceable." action={<button className="red-button" onClick={() => toast("Candidate import is ready for a CSV or PDF source.")}>Import candidates <UploadCloud size={16} /></button>} />
-    <div className="filter-bar"><label className="search-box"><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, skill, or role" /></label><div className="filter-group"><Filter size={16} /><select value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filter candidates"><option>All candidates</option><option>Shortlist</option><option>Pending</option><option>Reject</option></select><ChevronDown size={15} /></div><p>{filtered.length} profiles</p></div>
-    <section className="candidate-table"><div className="candidate-head"><span>Candidate</span><span>Expertise</span><span>Best match</span><span>Decision</span><span /></div>{filtered.map((candidate) => <button className="candidate-row" key={candidate.name} onClick={() => setLocation("/candidates/maia-patel")}><div className="person-cell"><span className="avatar-block">{candidate.initials}</span><span><strong>{candidate.name}</strong><small>{candidate.title}</small></span></div><div className="tag-list">{candidate.tags.slice(0, 2).map((tag) => <em key={tag}>{tag}</em>)}</div><div className="score-cell"><strong>{candidate.score}.0</strong><span>Senior Product Designer</span></div><StatusBadge status={candidate.status} /><ChevronRight className="row-arrow" size={18} /></button>)}</section>
+  return <div className="page-wrap"><PageIntro index="03 / CANDIDATES" title="A real view of every profile." description="Six fictional interview-demo candidates with distinct experience and matching signals." action={<button className="red-button" onClick={() => toast("Candidate import is ready for a CSV or PDF source.")}>Import candidates <UploadCloud size={16} /></button>} />
+    <div className="filter-bar"><label className="search-box"><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, skill, or role" /></label><div className="filter-group"><Filter size={16} /><select value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filter candidates"><option>All candidates</option><option>Shortlist</option><option>Pending</option><option>Reject</option></select><ChevronDown size={15} /></div><p>{filtered.length} fictional profiles</p></div>
+    <section className="candidate-table"><div className="candidate-head"><span>Candidate</span><span>Expertise</span><span>Best match</span><span>Decision</span><span /></div>{filtered.map((candidate) => <button className="candidate-row" key={candidate.id} onClick={() => setLocation(`/candidates/${candidate.id}`)}><div className="person-cell"><span className="avatar-block">{candidate.initials}</span><span><strong>{candidate.name}</strong><small>{candidate.title}</small></span></div><div className="tag-list">{candidate.tags.slice(0, 2).map((tag) => <em key={tag}>{tag}</em>)}</div><div className="score-cell"><strong>{candidate.score}.0</strong><span>Senior Product Designer</span></div><StatusBadge status={candidate.status} /><ChevronRight className="row-arrow" size={18} /></button>)}</section>
   </div>;
 }
 
-function CandidateProfile({ candidateMode = false }: { candidateMode?: boolean }) {
+function CandidateProfile({ candidateMode = false, activeCandidateId = "maia-patel" }: { candidateMode?: boolean; activeCandidateId?: string }) {
   const [, setLocation] = useLocation();
-  return <div className="page-wrap"><button className="back-link" onClick={() => setLocation(candidateMode ? "/jobs" : "/candidates")}>← {candidateMode ? "Open roles" : "All candidates"}</button><section className="candidate-hero"><div className="candidate-identity"><span className="candidate-monogram">MP</span><div><p className="section-index">CANDIDATE / 00084</p><h1>{candidateMode ? "Your profile" : "Maia Patel"}</h1><p>Senior Product Designer · Bengaluru, India</p><div className="hero-contact"><span><Mail size={14} />maia.patel.demo@talentlens.example</span><span><MapPin size={14} />Hybrid-ready</span><span><Linkedin size={14} />Verified profile</span></div><div className="demo-profile-actions"><span>Fictional interview-demo profile</span><a className="demo-resume-link" href={demoResumeUrl} target="_blank" rel="noreferrer"><FileText size={15} />Open demo resume</a></div></div></div><div className="candidate-score-hero"><p className="micro-label">BEST MATCH</p><strong>92.0</strong><span>Senior Product Designer</span></div></section>
-    <section className="profile-grid"><article className="grid-panel profile-summary"><p className="micro-label">PROFILE SUMMARY</p><h2>Product designer with a systems mindset.</h2><p>Seven years of experience designing high-velocity B2B tools across complex operational workflows. Strong in product strategy, system design, and research synthesis.</p><div className="tag-list large">{["Figma", "Design systems", "B2B SaaS", "User research", "Prototyping"].map((tag) => <em key={tag}>{tag}</em>)}</div></article><article className="grid-panel score-rail"><p className="micro-label">MATCH BREAKDOWN</p>{[["semantic", 96], ["skills", 91], ["experience", 88], ["education", 95], ["availability", 89]].map(([label, value]) => <ScoreLine key={String(label)} label={String(label)} value={Number(value)} />)}</article></section>
-    <section className="timeline-grid"><article className="grid-panel"><div className="panel-heading"><div><p className="micro-label">CAREER HISTORY</p><h2>Selected experience</h2></div><BriefcaseBusiness size={19} /></div><div className="timeline"><TimelineItem title="Senior Product Designer" org="Helio Systems" date="2022 — Present" text="Led the end-to-end redesign of a workflow product used by 18,000 operations teams." /><TimelineItem title="Product Designer" org="Ledger & Co." date="2019 — 2022" text="Built reusable patterns and scaled product discovery practice across two squads." /></div></article><article className="grid-panel"><div className="panel-heading"><div><p className="micro-label">EDUCATION</p><h2>Foundation</h2></div><GraduationCap size={19} /></div><div className="education-card"><span>2015 — 2019</span><strong>B.Des, Interaction Design</strong><p>National Institute of Design</p><small>Tier 1 · 95.0 education fit</small></div></article></section>
+  const [, params] = useRoute("/candidates/:id");
+  const candidate = candidates.find((item) => item.id === (candidateMode ? activeCandidateId : params?.id)) ?? candidates[0];
+  const scoreParts = [["semantic", Math.min(97, candidate.score + 4)], ["skills", Math.min(96, candidate.score + 1)], ["experience", Math.max(68, candidate.score - 4)], ["education", Math.min(95, candidate.score + 3)], ["availability", Math.max(72, candidate.score - 3)]];
+  return <div className="page-wrap"><button className="back-link" onClick={() => setLocation(candidateMode ? "/jobs" : "/candidates")}>← {candidateMode ? "Open roles" : "All candidates"}</button><section className="candidate-hero"><div className="candidate-identity"><span className="candidate-monogram">{candidate.initials}</span><div><p className="section-index">CANDIDATE / DEMO-{candidate.id.slice(0, 3).toUpperCase()}</p><h1>{candidateMode ? "Your profile" : candidate.name}</h1><p>{candidate.title} · {candidate.location}</p><div className="hero-contact"><span><Mail size={14} />{candidate.email}</span><span><MapPin size={14} />Hybrid-ready</span><span><Linkedin size={14} />Verified profile</span></div><div className="demo-profile-actions"><span>Fictional interview-demo profile</span>{candidate.id === "maia-patel" && <a className="demo-resume-link" href={demoResumeUrl} target="_blank" rel="noreferrer"><FileText size={15} />Open demo resume</a>}</div></div></div><div className="candidate-score-hero"><p className="micro-label">BEST MATCH</p><strong>{candidate.score}.0</strong><span>Senior Product Designer</span></div></section>
+    <section className="profile-grid"><article className="grid-panel profile-summary"><p className="micro-label">PROFILE SUMMARY</p><h2>{candidate.title} with a clear systems perspective.</h2><p>{candidate.summary}</p><div className="tag-list large">{candidate.tags.concat(["Interview demo"]).map((tag) => <em key={tag}>{tag}</em>)}</div></article><article className="grid-panel score-rail"><p className="micro-label">MATCH BREAKDOWN</p>{scoreParts.map(([label, value]) => <ScoreLine key={String(label)} label={String(label)} value={Number(value)} />)}</article></section>
+    <section className="timeline-grid"><article className="grid-panel"><div className="panel-heading"><div><p className="micro-label">CAREER HISTORY</p><h2>Selected experience</h2></div><BriefcaseBusiness size={19} /></div><div className="timeline">{candidate.experience.map((item) => <TimelineItem key={item.title} {...item} />)}</div></article><article className="grid-panel"><div className="panel-heading"><div><p className="micro-label">EDUCATION</p><h2>Foundation</h2></div><GraduationCap size={19} /></div><div className="education-card"><span>{candidate.education.period}</span><strong>{candidate.education.degree}</strong><p>{candidate.education.school}</p><small>{candidate.education.fit}</small></div></article></section>
   </div>;
 }
 
@@ -161,14 +185,14 @@ function TimelineItem({ title, org, date, text }: { title: string; org: string; 
 function ChartPanel({ label, title, caption, children }: { label: string; title: string; caption: string; children: React.ReactNode }) { return <article className="grid-panel chart-panel"><div className="panel-heading"><div><p className="micro-label">{label}</p><h2>{title}</h2></div><MoreHorizontal size={19} /></div><div className="chart-inner">{children}</div><p className="chart-caption">{caption}</p></article>; }
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) { return <div className="modal-layer" role="dialog" aria-modal="true" aria-label={title}><button className="modal-backdrop" onClick={onClose} aria-label="Close modal" /><div className="modal"><div className="modal-header"><h2>{title}</h2><button onClick={onClose} aria-label="Close modal"><X size={20} /></button></div>{children}</div></div>; }
 
-function Router({ role }: { role: WorkspaceRole }) {
+function Router({ role, activeCandidateId }: { role: WorkspaceRole; activeCandidateId: string }) {
   const recruiterOnly = (element: React.ReactNode) => role === "recruiter" ? element : <Restricted />;
   return <Switch>
     <Route path="/">{recruiterOnly(<Dashboard />)}</Route>
     <Route path="/jobs"><Jobs role={role} /></Route>
-    <Route path="/candidates/:id">{recruiterOnly(<CandidateProfile />)}</Route>
+    <Route path="/candidates/:id">{recruiterOnly(<CandidateProfile activeCandidateId={activeCandidateId} />)}</Route>
     <Route path="/candidates">{recruiterOnly(<Candidates />)}</Route>
-    <Route path="/profile"><CandidateProfile candidateMode /></Route>
+    <Route path="/profile"><CandidateProfile candidateMode activeCandidateId={activeCandidateId} /></Route>
     <Route path="/rankings">{recruiterOnly(<Rankings />)}</Route>
     <Route path="/analytics">{recruiterOnly(<Analytics />)}</Route>
     <Route path="/upload"><Upload /></Route>
@@ -181,7 +205,9 @@ function Router({ role }: { role: WorkspaceRole }) {
 
 function App() {
   const [role, setRole] = useState<WorkspaceRole>("recruiter");
-  return <><DashboardLayout role={role} onRoleChange={setRole}><Router role={role} /></DashboardLayout><Toaster position="bottom-right" richColors /></>;
+  const [activeRecruiterId, setActiveRecruiterId] = useState("ari-morgan");
+  const [activeCandidateId, setActiveCandidateId] = useState("maia-patel");
+  return <><DashboardLayout role={role} onRoleChange={setRole} recruiters={recruiters} candidates={candidates} activeRecruiterId={activeRecruiterId} activeCandidateId={activeCandidateId} onRecruiterChange={setActiveRecruiterId} onCandidateChange={setActiveCandidateId}><Router role={role} activeCandidateId={activeCandidateId} /></DashboardLayout><Toaster position="bottom-right" richColors /></>;
 }
 
 export default App;

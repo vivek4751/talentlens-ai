@@ -15,6 +15,13 @@ import { useLocation } from "wouter";
 
 export type WorkspaceRole = "recruiter" | "candidate";
 
+export type DemoPersona = {
+  id: string;
+  name: string;
+  title: string;
+  initials: string;
+};
+
 type NavItem = {
   label: string;
   path: string;
@@ -41,22 +48,48 @@ export default function DashboardLayout({
   children,
   role,
   onRoleChange,
+  recruiters,
+  candidates,
+  activeRecruiterId,
+  activeCandidateId,
+  onRecruiterChange,
+  onCandidateChange,
 }: {
   children: ReactNode;
   role: WorkspaceRole;
   onRoleChange: (role: WorkspaceRole) => void;
+  recruiters: DemoPersona[];
+  candidates: DemoPersona[];
+  activeRecruiterId: string;
+  activeCandidateId: string;
+  onRecruiterChange: (id: string) => void;
+  onCandidateChange: (id: string) => void;
 }) {
   const [location, setLocation] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const menu = role === "recruiter" ? recruiterMenu : candidateMenu;
   const roleName = role === "recruiter" ? "Recruiter" : "Candidate";
-  const profile = role === "recruiter"
-    ? { name: "Ari Morgan", title: "Recruitment Lead", initials: "AM" }
-    : { name: "Maia Patel", title: "Senior Product Designer", initials: "MP" };
+  const personas = role === "recruiter" ? recruiters : candidates;
+  const activePersonaId = role === "recruiter" ? activeRecruiterId : activeCandidateId;
+  const profile = personas.find((persona) => persona.id === activePersonaId) ?? personas[0];
 
   const navigate = (path: string) => {
     setLocation(path);
     setMobileOpen(false);
+  };
+
+  const switchRole = (nextRole: WorkspaceRole) => {
+    onRoleChange(nextRole);
+    navigate(nextRole === "recruiter" ? "/" : "/profile");
+  };
+
+  const switchPersona = (id: string) => {
+    if (role === "recruiter") {
+      onRecruiterChange(id);
+    } else {
+      onCandidateChange(id);
+      navigate("/profile");
+    }
   };
 
   return (
@@ -74,9 +107,17 @@ export default function DashboardLayout({
         <div className="role-switcher" aria-label="Preview user role">
           <p className="micro-label">WORKSPACE MODE</p>
           <div className="role-switcher-buttons">
-            <button className={role === "recruiter" ? "is-selected" : ""} onClick={() => onRoleChange("recruiter")}>Recruiter</button>
-            <button className={role === "candidate" ? "is-selected" : ""} onClick={() => onRoleChange("candidate")}>Candidate</button>
+            <button className={role === "recruiter" ? "is-selected" : ""} onClick={() => switchRole("recruiter")}>Recruiter</button>
+            <button className={role === "candidate" ? "is-selected" : ""} onClick={() => switchRole("candidate")}>Candidate</button>
           </div>
+        </div>
+
+        <div className="persona-switcher">
+          <p className="micro-label">DEMO {role === "recruiter" ? "RECRUITER" : "CANDIDATE"} IDENTITY</p>
+          <select value={activePersonaId} onChange={(event) => switchPersona(event.target.value)} aria-label={`Choose a fictional ${role} demo identity`}>
+            {personas.map((persona) => <option key={persona.id} value={persona.id}>{persona.name} — {persona.title}</option>)}
+          </select>
+          <span>{personas.length} fictional demo profiles available</span>
         </div>
 
         <nav className="sidebar-nav">
@@ -96,10 +137,10 @@ export default function DashboardLayout({
 
         <div className="sidebar-bottom">
           <div className="profile-block">
-            <div className="avatar-block">{profile.initials}</div>
+            <div className="avatar-block">{profile?.initials}</div>
             <div>
-              <p>{profile.name}</p>
-              <span>{profile.title} · Demo account</span>
+              <p>{profile?.name}</p>
+              <span>{profile?.title} · Demo account</span>
               <small className="demo-account">Fictional interview demo</small>
             </div>
           </div>

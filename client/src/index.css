@@ -37,6 +37,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .role-switcher-buttons button { padding: 8px 5px; border: 0; background: var(--paper); color: var(--muted); font-size: 11px; }
 .role-switcher-buttons button + button { border-left: 1px solid var(--line); }
 .role-switcher-buttons .is-selected { background: var(--ink); color: var(--paper); }
+.persona-switcher { padding: 15px 21px; border-bottom: 1px solid var(--line); background: var(--soft-paper); }.persona-switcher select { width: 100%; margin-top: 9px; border: 1px solid var(--line); border-radius: 0; background: white; padding: 9px; color: var(--ink); font-size: 11px; }.persona-switcher > span { display: block; margin-top: 7px; color: var(--signal); font: 500 8px "DM Mono", monospace; text-transform: uppercase; letter-spacing: .04em; }
 .sidebar-nav { padding: 27px 13px; flex: 1; }
 .sidebar-nav .micro-label { padding: 0 8px 10px; display: block; }
 .nav-row { display: flex; align-items: center; gap: 12px; width: 100%; border: 0; border-left: 3px solid transparent; padding: 11px 8px 11px 13px; text-align: left; background: transparent; color: var(--ink); font-size: 14px; position: relative; transition: background .18s ease, padding .18s ease; }
