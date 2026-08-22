@@ -18,3 +18,5 @@
 - [x] Add six clearly fictional, distinct candidate records with candidate-specific profile views.
 - [x] Add a visible recruiter-demo switcher with six clearly fictional recruiter identities.
 - [x] Verify candidate and recruiter switching across the expanded interview-demo roster.
+- [ ] Commit the finalized TalentLens AI redesign to a safe GitHub repository destination.
+- [ ] Push the redesign to a dedicated branch in vivek4751/talentlens-ai without changing main.
