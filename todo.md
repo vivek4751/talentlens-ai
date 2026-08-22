@@ -20,5 +20,5 @@
 - [x] Verify candidate and recruiter switching across the expanded interview-demo roster.
 - [x] Commit the finalized TalentLens AI redesign to a safe GitHub repository destination.
 - [x] Push the redesign to a dedicated branch in vivek4751/talentlens-ai without changing main.
-- [ ] Preserve the existing vivek4751/talentlens-ai main commit in a backup branch.
-- [ ] Replace vivek4751/talentlens-ai main with the finalized redesign branch.
+- [x] Preserve the existing vivek4751/talentlens-ai main commit in a backup branch.
+- [x] Replace vivek4751/talentlens-ai main with the finalized redesign branch.
