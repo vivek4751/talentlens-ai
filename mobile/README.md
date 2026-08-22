@@ -35,12 +35,12 @@ npx expo export --platform android --output-dir dist-android
 
 ## Produce an installable Android build
 
-For an installable APK/AAB, sign in to an Expo account and run an EAS build from this directory. EAS setup and signing are user-account operations and must be completed with your chosen Android package ownership.
+For an installable APK/AAB, sign in to an Expo account and run an EAS build from this directory. EAS setup and signing are user-account operations and must be completed with your chosen Android package ownership. This project includes an `eas.json` **preview** profile for direct installation; it generates a signed internal-distribution APK rather than a Play Store AAB.
 
 ```bash
 npx eas-cli@latest login
 npx eas-cli@latest build:configure
-npx eas-cli@latest build --platform android
+npx eas-cli@latest build --platform android --profile preview
 ```
 
-The Android package identifier is `com.talentlens.mobile`; update it in `app.json` before publishing if that identifier is unavailable or needs to be owned by a different organization.
+Set `EXPO_PUBLIC_TALENTLENS_API_URL` in the local `.env` before building so the mobile app points to the deployed TalentLens backend. The Android package identifier is `com.talentlens.mobile`; update it in `app.json` before publishing if that identifier is unavailable or needs to be owned by a different organization.
