@@ -1,6 +1,6 @@
-import { SignJWT } from "jose";
+import { jwtVerify, SignJWT } from "jose";
 
-type MobileAccount = {
+export type MobileAccount = {
   id: string;
   email: string;
   name: string;
@@ -20,4 +20,12 @@ export async function issueMobileToken(user: MobileAccount) {
     .setIssuedAt()
     .setExpirationTime("7d")
     .sign(tokenSecret());
+}
+
+export async function verifyMobileToken(token: string): Promise<MobileAccount> {
+  const { payload } = await jwtVerify(token, tokenSecret());
+  if (!payload.sub || typeof payload.email !== "string" || typeof payload.name !== "string" || typeof payload.role !== "string") {
+    throw new Error("Invalid mobile session.");
+  }
+  return { id: payload.sub, email: payload.email, name: payload.name, role: payload.role };
 }
