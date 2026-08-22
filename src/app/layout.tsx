@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TalentLens AI",
-  description: "Advanced Recruiter ATS Platform",
+  title: "TalentLens AI — Recruitment intelligence",
+  description: "Structured, data-led recruitment intelligence for recruiters and candidates.",
 };
 
 export default function RootLayout({
