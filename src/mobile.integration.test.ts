@@ -20,7 +20,16 @@ describe("TalentLens Android companion integration", () => {
 
   it("keeps Android resume uploads and candidate applications on existing backend services", () => {
     expect(source("src/app/api/mobile/resume/route.ts")).toContain("MatchingService.createCandidateProfile");
-    expect(source("src/app/api/mobile/jobs/[jobId]/apply/route.ts")).toContain("MatchingService.runJobMatching");
+    const application = source("src/app/api/mobile/jobs/[jobId]/apply/route.ts");
+    expect(application).toContain("MatchingService.runJobMatching");
+    expect(application).toContain("rawResumeText");
+    expect(application).not.toContain("resumeUrl");
+  });
+
+  it("uses a currently supported Gemini Flash model for parser-backed mobile workflows", () => {
+    const gemini = source("src/services/gemini.service.ts");
+    expect(gemini).toContain("gemini-3.6-flash");
+    expect(gemini).not.toContain("gemini-2.5-flash");
   });
 
   it("keeps the native app configurable and exposes every required recruiter decision", () => {
