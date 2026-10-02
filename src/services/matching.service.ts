@@ -1,6 +1,7 @@
 import { AppError, AuthError } from '../core/errors';
 import { prisma } from '../lib/prisma';
 import { GeminiService } from './gemini.service';
+import { AnomalyService } from './anomaly.service';
 import { RankingService, CandidateScoringInput, JobScoringInput } from './ranking.service';
 
 export class MatchingService {
@@ -103,6 +104,11 @@ export class MatchingService {
 
     // 2. Generate Candidate embedding
     const embedding = await GeminiService.generateEmbedding(rawResumeText);
+    const professionalMonths = parsedCandidate.careerHistory.filter(job => AnomalyService.isProfessionalExperience(job)).reduce((sum, job) => sum + job.durationMonths, 0);
+    const audit = AnomalyService.checkCandidate({
+      rawResumeText, yearsOfExperience: Math.max(parsedCandidate.profile.yearsOfExperience, professionalMonths / 12),
+      skills: parsedCandidate.skills, careerHistory: parsedCandidate.careerHistory, education: parsedCandidate.education,
+    });
 
     // Parse before opening the transaction. A failed save must preserve the old profile.
     const candidate = await prisma.$transaction(async (tx) => {
@@ -126,6 +132,8 @@ export class MatchingService {
             ...(replacementOfficialId ? { candidateId: replacementOfficialId } : {}),
             name: this.formatCandidateName(parsedCandidate.profile.anonymizedName || existingCandidate.name),
             rawResumeText,
+            anomalyStatus: audit.status,
+            anomalyReasons: audit.reasons,
             headline: parsedCandidate.profile.headline,
             summary: (parsedCandidate.profile.summary && parsedCandidate.profile.summary.trim() !== "" && parsedCandidate.profile.summary.toLowerCase() !== "null") ? parsedCandidate.profile.summary : null,
             location: parsedCandidate.profile.location,
@@ -150,6 +158,8 @@ export class MatchingService {
             candidateId: officialCandId,
             name: this.formatCandidateName(parsedCandidate.profile.anonymizedName),
             rawResumeText,
+            anomalyStatus: audit.status,
+            anomalyReasons: audit.reasons,
             headline: parsedCandidate.profile.headline,
             summary: (parsedCandidate.profile.summary && parsedCandidate.profile.summary.trim() !== "" && parsedCandidate.profile.summary.toLowerCase() !== "null") ? parsedCandidate.profile.summary : null,
             location: parsedCandidate.profile.location,
@@ -340,6 +350,7 @@ export class MatchingService {
     for (const candidate of candidates) {
       const candEmbedding = embeddingMap.get(candidate.id);
       const candScoringInput: CandidateScoringInput = {
+        rawResumeText: candidate.rawResumeText,
         yearsOfExperience: candidate.yearsOfExperience,
         skills: candidate.skills,
         careerHistory: candidate.careerHistory.map((ch) => ({
@@ -365,7 +376,7 @@ export class MatchingService {
 
       // Generate rule-based basic reasoning to populate initially
       const strengths: string[] = [];
-      const weaknesses: string[] = [];
+      const weaknesses = AnomalyService.checkResumeText(candidate.rawResumeText);
       const missingSkills: string[] = [];
 
       const candSkillSet = new Set(candidate.skills.map((s) => s.name.toLowerCase().trim()));
@@ -498,6 +509,7 @@ export class MatchingService {
     const candVector = this.parseVectorString(candEmbedResult[0]?.embedding);
 
     const candScoringInput: CandidateScoringInput = {
+      rawResumeText: candidate.rawResumeText,
       yearsOfExperience: candidate.yearsOfExperience,
       skills: candidate.skills,
       careerHistory: candidate.careerHistory.map((ch) => ({
@@ -548,7 +560,7 @@ export class MatchingService {
       const breakdown = RankingService.scoreCandidate(candScoringInput, jobScoringInput);
 
       const strengths: string[] = [];
-      const weaknesses: string[] = [];
+      const weaknesses = AnomalyService.checkResumeText(candidate.rawResumeText);
       const missingSkills: string[] = [];
 
       const candSkillSet = new Set(candidate.skills.map((s) => s.name.toLowerCase().trim()));

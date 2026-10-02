@@ -45,6 +45,7 @@ export interface ScorerConfig {
 }
 
 export interface CandidateScoringInput {
+  rawResumeText?: string;
   yearsOfExperience: number;
   skills: { name: string; proficiency: string; durationMonths: number }[];
   careerHistory: {

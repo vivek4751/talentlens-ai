@@ -4,6 +4,17 @@ export interface AnomalyResult {
 }
 
 export class AnomalyService {
+  /** Validate explicit ISO date ranges even when AI extraction omits an endpoint. */
+  public static checkResumeText(text?: string): string[] {
+    const reasons: string[] = [];
+    const ranges = (text || '').matchAll(/\b(\d{4}-\d{2}-\d{2})\s*(?:to|through|[-–—])\s*(\d{4}-\d{2}-\d{2})\b/gi);
+    for (const [, start, end] of ranges) {
+      const valid = (date: string) => Number.isFinite(Date.parse(date)) && new Date(date).toISOString().slice(0, 10) === date;
+      if (!valid(start) || !valid(end)) reasons.push(`Invalid calendar date in resume range ${start} to ${end}. Verify the source dates.`);
+      else if (start > end) reasons.push(`Resume date range starts after it ends (${start} to ${end}). Verify chronology before proceeding.`);
+    }
+    return [...new Set(reasons)];
+  }
   /**
    * Classifies experience into professional vs non-professional.
    * Only professional experience should participate in anomaly calculations.
@@ -38,6 +49,7 @@ export class AnomalyService {
    * Generates confidence levels based on chronological or mathematical impossibilities.
    */
   public static checkCandidate(candidate: {
+    rawResumeText?: string;
     yearsOfExperience: number;
     skills: { name: string; proficiency: string; durationMonths: number }[];
     careerHistory: {
@@ -59,8 +71,8 @@ export class AnomalyService {
     profileCompleteness?: number;
     connectionCount?: number;
   }): AnomalyResult {
-    const reasons: string[] = [];
-    let status: 'CLEAN' | 'LOW' | 'MEDIUM' | 'HIGH' = 'CLEAN';
+    const reasons = this.checkResumeText(candidate.rawResumeText);
+    let status: 'CLEAN' | 'LOW' | 'MEDIUM' | 'HIGH' = reasons.length ? 'HIGH' : 'CLEAN';
 
     const yoeMonths = candidate.yearsOfExperience * 12;
     const now = new Date();
