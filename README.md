@@ -2,22 +2,19 @@
 
 TalentLens helps recruiters compare resumes with job descriptions. The Next.js web app extracts PDF text, uses Gemini to structure profiles and generate embeddings, stores them in PostgreSQL with Prisma and pgvector, then ranks candidates with an explainable weighted scoring engine. Recruiters can review score breakdowns, manage shortlists and export results. An Expo Android companion lives in `mobile/`.
 
-## Recruiter demo
+## Recruiter workspace
 
-Open `/demo` to explore **12 fictional resumes, 3 job descriptions and 36 scored comparisons**. Sign in as a recruiter and click **Add sample data to my workspace**, then open **My rankings**. The import uses account-specific IDs and a transaction; repeated clicks reuse records and preserve recruiter decisions. Demo matching is isolated from normal candidate/job matching.
+Use the standard resume import, job creation, rankings and Analytics screens. Resume updates re-run Gemini parsing, embeddings and matching while preserving recruiter decisions. Job description edits refresh parsed requirements, embeddings and rankings. Analytics includes an account-scoped candidate leaderboard, search and decision/score filters, comparison radar charts, a decision funnel, skill-gap counts, role coverage, and CSV export. The funnel reflects pending, reviewed and shortlisted matches; interview and offer stages are not tracked.
 
-The public page also works without a database connection or Gemini key. Importing requires a working database and authenticated recruiter account. It seeds structured fictional profiles directly and does not call Gemini. To demonstrate the actual PDF → Gemini → database workflow, upload a sample PDF through the normal resume workflow and create a job through the job form; that flow requires a valid Gemini API key and quota.
+## Evaluation fixtures
 
-- Resume PDFs: `public/demo/resumes/` (12 files).
-- Job-description PDFs: `public/demo/jobs/` (3 files).
-- Fixed profiles and relevance labels: `src/demo/fixtures.json`.
-- Measured results, full scores and methodology: `reports/demo-results.md`, `.json` and `.csv`.
+The repository includes 12 fictional resume PDFs and three job-description PDFs in `public/demo/`, with structured fixtures and relevance labels in `src/demo/fixtures.json`. Upload these through the normal workflows to exercise PDF extraction, Gemini parsing and semantic matching. There is no separate public showcase page or direct seed endpoint.
 
-The measured structured-profile demo achieves **88.9% precision@3 and 1.000 NDCG@3** across three roles. These are results on a small, curated synthetic dataset, with semantic scoring disabled and the remaining default weights redistributed proportionally. The labels were authored before scoring; they are not independently reviewed or held out. This does not measure Gemini parsing, semantic embeddings, production latency or real-world hiring accuracy. A candidate fit percentage is a score, not accuracy.
+The offline structured-profile benchmark reports **88.9% precision@3 and 1.000 NDCG@3** over 36 synthetic candidate–job pairs. Semantic scoring is disabled for this offline test, with other weights redistributed. The small curated dataset is not held out or independently reviewed and does not establish production hiring accuracy. Reports and methodology are in `reports/demo-results.*`.
 
 Suggested resume wording:
 
-> Evaluated an explainable recruitment scoring engine on 36 manually labeled synthetic candidate–job pairs, measuring 88.9% precision@3 and 1.000 NDCG@3 across three job roles.
+> Evaluated an explainable recruitment scorer on 36 manually labeled synthetic candidate–job pairs, measuring 88.9% precision@3 and 1.000 NDCG@3 across three roles.
 
 ## Run locally
 
@@ -46,11 +43,11 @@ npm run demo:benchmark
 npm run build
 ```
 
-The benchmark runs the application's TypeScript scorer after five warm-up batches and records 200 measured batches of 36 comparisons. Local timing includes scorer configuration reads and excludes AI, database, HTTP, PDF extraction and browser rendering. The generated report is served by `/api/demo`; regenerate it before building if fixtures or scoring rules change.
+The benchmark runs the application's TypeScript scorer after five warm-up batches and records 200 measured batches of 36 comparisons. Local timing includes scorer configuration reads and excludes AI, database, HTTP, PDF extraction and browser rendering. Regenerate the offline report if fixtures or scoring rules change.
 
 Regression coverage includes recruiter uploads creating separate profiles, candidate self-profile updates, transactional failure behavior, ownership checks, scoring edge cases, registration errors and text extraction from all 15 demo PDFs.
 
-## Fixes included with the demo
+## Reliability fixes
 
 - Recruiter resume uploads create separate candidate records; candidate accounts update their own profile transactionally.
 - PDF parsing receives an isolated byte array so pooled Node buffers cannot expose another document's bytes to the old PDF.js parser.
@@ -59,4 +56,4 @@ Regression coverage includes recruiter uploads creating separate profiles, candi
 - Re-ranking refreshes score explanations while preserving recruiter decisions.
 - Registration returns useful, sanitized errors for duplicate accounts and unavailable databases, with a support reference for server logs.
 
-No Prisma schema change is required for these fixes or the demo. Existing dependency audit findings should be reviewed separately before claiming a security-complete release.
+No Prisma schema change is required for these features. Existing dependency audit findings should be reviewed separately before claiming a security-complete release.

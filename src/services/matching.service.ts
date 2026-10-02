@@ -1,8 +1,7 @@
-import { AuthError } from '../core/errors';
+import { AppError, AuthError } from '../core/errors';
 import { prisma } from '../lib/prisma';
 import { GeminiService } from './gemini.service';
 import { RankingService, CandidateScoringInput, JobScoringInput } from './ranking.service';
-import { DEMO_WEIGHTS, DEMO_LIMITATION } from '../demo/scenarios';
 
 export class MatchingService {
   /**
@@ -82,12 +81,22 @@ export class MatchingService {
   public static async createCandidateProfile(
     userId: string,
     rawResumeText: string,
-    customCandidateId?: string
+    customCandidateId?: string,
+    replaceProfileId?: string
   ): Promise<any> {
     const owner = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
     if (!owner || !['candidate', 'recruiter', 'admin'].includes(owner.role)) {
       throw new AuthError('A valid candidate or recruiter account is required.');
     }
+    const replacement = replaceProfileId
+      ? await prisma.candidate.findUnique({ where: { id: replaceProfileId } })
+      : null;
+    if (replaceProfileId && !replacement) throw new AppError('Candidate not found.', 404);
+    if (replacement && replacement.userId !== userId && owner.role !== 'admin') {
+      throw new AppError('Forbidden', 403);
+    }
+    const replacementOfficialId = replacement && !replacement.candidateId.startsWith('CAND_')
+      ? await this.generateUniqueCandidateId() : undefined;
 
     // 1. Parse Resume using Gemini
     const parsedCandidate = await GeminiService.parseResume(rawResumeText);
@@ -99,9 +108,9 @@ export class MatchingService {
     const candidate = await prisma.$transaction(async (tx) => {
       // Serialize uploads per account; candidates have one self-managed profile.
       await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
-      const existingCandidate = owner.role === 'candidate'
+      const existingCandidate = replacement || (owner.role === 'candidate'
         ? await tx.candidate.findFirst({ where: { userId } })
-        : null;
+        : null);
       let candidate;
 
       if (existingCandidate) {
@@ -114,6 +123,7 @@ export class MatchingService {
         candidate = await tx.candidate.update({
           where: { id: existingCandidate.id },
           data: {
+            ...(replacementOfficialId ? { candidateId: replacementOfficialId } : {}),
             name: this.formatCandidateName(parsedCandidate.profile.anonymizedName || existingCandidate.name),
             rawResumeText,
             headline: parsedCandidate.profile.headline,
@@ -288,7 +298,6 @@ export class MatchingService {
     if (!job) {
       throw new Error(`Job description not found for ID: ${jobId}`);
     }
-    const demoPrefix = jobId.startsWith('demo-') ? jobId.split('-').slice(0, 2).join('-') + '-' : null;
 
     // 2. Fetch Job Embedding
     const jdEmbedResult = await prisma.$queryRawUnsafe<any[]>(
@@ -307,7 +316,6 @@ export class MatchingService {
 
     // 3. Fetch all Candidates with full details
     const candidates = await prisma.candidate.findMany({
-      where: demoPrefix ? { id: { startsWith: demoPrefix } } : { NOT: { id: { startsWith: 'demo-' } } },
       include: {
         skills: true,
         careerHistory: true,
@@ -353,7 +361,7 @@ export class MatchingService {
       };
 
       // Calculate Hybrid score
-      const breakdown = RankingService.scoreCandidate(candScoringInput, jobScoringInput, customWeights ?? (demoPrefix ? DEMO_WEIGHTS : undefined));
+      const breakdown = RankingService.scoreCandidate(candScoringInput, jobScoringInput, customWeights);
 
       // Generate rule-based basic reasoning to populate initially
       const strengths: string[] = [];
@@ -387,7 +395,7 @@ export class MatchingService {
         weaknesses.push(`Missing some required skills: ${missingSkills.slice(0, 3).join(', ')}.`);
       }
 
-      const hiringRecommendation = demoPrefix ? DEMO_LIMITATION : `Candidate ${candidate.name} exhibits an overall fit of ${(breakdown.overallScore * 100).toFixed(1)}%. Key skills are ${candidate.skills.slice(0, 3).map((s) => s.name).join(', ')}.`;
+      const hiringRecommendation = `Candidate ${candidate.name} exhibits an overall fit of ${(breakdown.overallScore * 100).toFixed(1)}%. Key skills are ${candidate.skills.slice(0, 3).map((s) => s.name).join(', ')}.`;
 
       // 5. Save/Update Match record
       await prisma.match.upsert({
@@ -511,10 +519,7 @@ export class MatchingService {
     };
 
     // 3. Fetch all Jobs
-    const demoPrefix = candidate.id.startsWith('demo-') ? candidate.id.split('-').slice(0, 2).join('-') + '-' : null;
-    const jobs = await prisma.job.findMany({
-      where: demoPrefix ? { id: { startsWith: demoPrefix } } : { NOT: { id: { startsWith: 'demo-' } } },
-    });
+    const jobs = await prisma.job.findMany();
 
     // Fetch Job Embeddings map
     const jobEmbedResults = await prisma.$queryRawUnsafe<any[]>(
@@ -540,7 +545,7 @@ export class MatchingService {
         embedding: jobEmbedding || null,
       };
 
-      const breakdown = RankingService.scoreCandidate(candScoringInput, jobScoringInput, demoPrefix ? DEMO_WEIGHTS : undefined);
+      const breakdown = RankingService.scoreCandidate(candScoringInput, jobScoringInput);
 
       const strengths: string[] = [];
       const weaknesses: string[] = [];

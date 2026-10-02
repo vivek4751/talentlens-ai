@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { MatchingService } from "@/services/matching.service";
+
+export const maxDuration = 180;
 
 export async function PUT(
   req: NextRequest,
@@ -43,6 +46,9 @@ export async function PUT(
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
+    if (rawDescription !== undefined && (typeof rawDescription !== "string" || rawDescription.trim().length < 20 || rawDescription.length > 100000)) {
+      return NextResponse.json({ message: "Provide a job description between 20 and 100,000 characters." }, { status: 400 });
+    }
     const updateData: any = {};
     if (title !== undefined) updateData.title = title;
     if (company !== undefined) updateData.company = company;
@@ -56,7 +62,6 @@ export async function PUT(
     // If rawDescription has changed, re-run Gemini parsing and embed calculation
     if (rawDescription && rawDescription !== existingJob.rawDescription) {
       const { GeminiService } = await import("@/services/gemini.service");
-      const { MatchingService } = await import("@/services/matching.service");
       
       const parsedJd = await GeminiService.parseJobDescription(rawDescription);
       updateData.requiredSkills = parsedJd.requiredSkills;
@@ -67,18 +72,17 @@ export async function PUT(
       updateData.preferredDegrees = parsedJd.preferredDegrees;
       updateData.preferredUniversities = parsedJd.preferredUniversities;
 
-      const updated = await prisma.job.update({
-        where: { id: jobId },
-        data: updateData,
-      });
-
+      // Finish AI calls before saving so a failure preserves the existing job and vector.
       const embedding = await GeminiService.generateEmbedding(rawDescription);
-      const vectorStr = MatchingService.formatVectorString(embedding);
-      await prisma.$executeRawUnsafe(
-        `UPDATE "Job" SET "embedding" = $1::vector WHERE "id" = $2`,
-        vectorStr,
-        jobId
-      );
+      const updated = await prisma.$transaction(async tx => {
+        const saved = await tx.job.update({ where: { id: jobId }, data: updateData });
+        await tx.$executeRawUnsafe(
+          `UPDATE "Job" SET "embedding" = $1::vector WHERE "id" = $2`,
+          MatchingService.formatVectorString(embedding), jobId
+        );
+        return saved;
+      });
+      await MatchingService.runJobMatching(jobId);
 
       return NextResponse.json(updated, { status: 200 });
     }
@@ -88,6 +92,7 @@ export async function PUT(
       data: updateData,
     });
 
+    await MatchingService.runJobMatching(jobId);
     return NextResponse.json(updatedJob, { status: 200 });
   } catch (error: any) {
     console.error("Update Job Error:", error);

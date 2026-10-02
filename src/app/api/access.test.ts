@@ -1,15 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
-const mocks = vi.hoisted(() => ({ auth: vi.fn(), job: vi.fn(), match: vi.fn(), rank: vi.fn(), explain: vi.fn(), seed: vi.fn() }));
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), job: vi.fn(), match: vi.fn(), rank: vi.fn(), explain: vi.fn() }));
 vi.mock('@/auth', () => ({ auth: mocks.auth }));
 vi.mock('@/lib/prisma', () => ({ prisma: { job: { findUnique: mocks.job }, match: { findUnique: mocks.match } } }));
 vi.mock('@/services/matching.service', () => ({ MatchingService: { runJobMatching: mocks.rank } }));
 vi.mock('@/services/gemini.service', () => ({ GeminiService: { generateMatchExplanation: mocks.explain } }));
-vi.mock('@/services/demo-seed.service', () => ({ seedRecruiterDemo: mocks.seed }));
 import { POST as rank } from './jobs/[id]/rank/route';
 import { POST as explain } from './matches/[id]/explain/route';
-import { POST as seed } from './demo/route';
 
 beforeEach(() => { vi.resetAllMocks(); });
 const request = () => new NextRequest('http://localhost/api/test', { method: 'POST' });
@@ -34,13 +32,4 @@ describe('ranking and explanation access', () => {
       expect(mocks.rank).not.toHaveBeenCalled(); expect(mocks.explain).not.toHaveBeenCalled();
     });
   }
-  it('protects demo imports and uses the authenticated account', async () => {
-    mocks.auth.mockResolvedValue(null);
-    expect((await seed()).status).toBe(401);
-    expect(mocks.seed).not.toHaveBeenCalled();
-    mocks.auth.mockResolvedValue({ user: { id: 'owner', role: 'recruiter' } });
-    mocks.seed.mockResolvedValue({ candidates: 12, jobs: 3, matches: 36 });
-    expect((await seed()).status).toBe(200);
-    expect(mocks.seed).toHaveBeenCalledWith('owner');
-  });
 });
