@@ -5,17 +5,11 @@ import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { Download, RefreshCw } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
-import { AnalyticsCandidate, RecruiterAnalyticsData } from '@/types/analytics';
+import { RecruiterAnalyticsData } from '@/types/analytics';
+import { filterAnalyticsCandidates } from '@/lib/analytics-export';
 
 const AnalyticsRadar = dynamic(() => import('@/components/AnalyticsRadar'), { ssr: false, loading: () => <p className="p-8 text-sm">Loading comparison chart…</p> });
 const statusLabel = (status: string) => status === 'SHORTLISTED' ? 'Shortlisted' : status === 'REJECTED' ? 'Rejected' : 'Pending';
-
-function exportCsv(rows: AnalyticsCandidate[]) {
-  const cell = (value: string | number) => `"${String(value).replace(/^\s*[=+@-]/, "'$&").replace(/"/g, '""')}"`;
-  const lines = [['Candidate', 'Role', 'Fit score (%)', 'Decision', 'Semantic', 'Skills', 'Experience', 'Education', 'Domain', 'Career', 'Availability', 'Missing skills'], ...rows.map(c => [c.name, c.jobTitle, c.score, statusLabel(c.status), ...Object.values(c.dimensions), c.missingSkills.join('; ')])];
-  const url = URL.createObjectURL(new Blob(['\uFEFF' + lines.map(row => row.map(cell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' }));
-  const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'talentlens-candidate-analytics.csv'; anchor.click(); URL.revokeObjectURL(url);
-}
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<RecruiterAnalyticsData | null>(null);
@@ -43,16 +37,17 @@ export default function AnalyticsPage() {
     fetch(`/api/analytics?${params}`, { signal: controller.signal }).then(async r => { const result = await r.json(); if (!r.ok) throw new Error(result.message || 'Unable to load analytics.'); return result as RecruiterAnalyticsData; }).then(result => { setData(result); setError(''); setSelected([]); }).catch(err => { if (err.name !== 'AbortError') setError(err.message); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [jobId, startDate, endDate, refresh]);
-  const rows = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return (data?.leaderboard || []).filter(c => (!query || [c.name, c.title || '', c.jobTitle, ...c.skills].some(v => v.toLowerCase().includes(query))) && (!status || c.status === status) && c.score >= minimum).sort((a, b) => sort === 'name' ? a.name.localeCompare(b.name) : sort === 'lowest' ? a.score - b.score : b.score - a.score);
-  }, [data, search, status, minimum, sort]);
+  const rows = useMemo(() => filterAnalyticsCandidates(data?.leaderboard || [], { search, status, minimum, sort }), [data, search, status, minimum, sort]);
+  const exportParams = new URLSearchParams({ search, status, minimum: String(minimum), sort });
+  if (jobId) exportParams.set('jobId', jobId);
+  if (startDate) exportParams.set('startDate', startDate);
+  if (endDate) exportParams.set('endDate', endDate);
   const compared = rows.filter(c => selected.includes(c.id));
   const compare = (id: string) => setSelected(current => current.includes(id) ? current.filter(value => value !== id) : current.length < 3 ? [...current, id] : current);
   const changeScope = () => { setLoading(true); setError(''); };
 
   return <DashboardLayout>
-    <section className="tl-page-intro"><div><p className="tl-eyebrow">05 / ANALYTICS</p><h1 className="tl-heading">Evidence behind every decision.</h1><p className="tl-subheading">Compare candidates, inspect skill gaps, and track decisions across your hiring pipeline.</p></div><div className="flex flex-wrap gap-3"><button className="tl-black-button" disabled={loading} onClick={() => { changeScope(); setRefresh(v => v + 1); }}><RefreshCw size={15} />Refresh</button><button className="tl-red-button" disabled={!rows.length || loading || !!error} onClick={() => exportCsv(rows)}><Download size={15} />Export CSV</button></div></section>
+    <section className="tl-page-intro"><div><p className="tl-eyebrow">05 / ANALYTICS</p><h1 className="tl-heading">Evidence behind every decision.</h1><p className="tl-subheading">Compare candidates, inspect skill gaps, and track decisions across your hiring pipeline.</p></div><div className="flex flex-wrap gap-3"><button className="tl-black-button" disabled={loading} onClick={() => { changeScope(); setRefresh(v => v + 1); }}><RefreshCw size={15} />Refresh</button><a className="tl-red-button" aria-disabled={!rows.length || loading || !!error} href={rows.length && !loading && !error ? `/api/analytics/export?${exportParams}` : undefined}><Download size={15} />Export CSV</a></div></section>
     <section className="tl-filter-strip" aria-label="Analytics filters">
       <label>Role<select aria-label="Analytics role" value={jobId} onChange={e => { changeScope(); setJobId(e.target.value); }}><option value="">All my roles</option>{jobs.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}</select></label>
       <label>From<input aria-label="From date" type="date" value={startDate} onChange={e => { changeScope(); setStartDate(e.target.value); }} /></label>

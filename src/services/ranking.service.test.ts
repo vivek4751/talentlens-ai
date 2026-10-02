@@ -32,4 +32,11 @@ describe('ranking regressions', () => {
     const invalid = demoFixtures.candidates.find(person => person.id === 'vikram-jain')!.profile;
     expect(RankingService.scoreCandidate(invalid, job, DEMO_WEIGHTS).overallScore).toBe(0);
   });
+  it('detects a reversed source date range when the AI omitted its end date', () => {
+    const extracted = { ...candidate, rawResumeText: 'Experience dates: 2025-01-01 to 2022-01-01', careerHistory: candidate.careerHistory.map(job => ({ ...job, endDate: null, isCurrent: true })) };
+    expect(RankingService.scoreCandidate(extracted, job).overallScore).toBe(0);
+  });
+  it('does not penalize a valid explicit source timeline', () => {
+    expect(RankingService.scoreCandidate({ ...candidate, rawResumeText: 'Dates: 2020-01-01 to 2026-01-01' }, job).overallScore).toBeGreaterThan(0);
+  });
 });

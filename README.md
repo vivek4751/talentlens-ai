@@ -54,7 +54,7 @@ Regression coverage includes recruiter uploads creating separate profiles, candi
 - PDF parsing receives an isolated byte array so pooled Node buffers cannot expose another document's bytes to the old PDF.js parser.
 - Ranking and explanation endpoints require recruiter access and job ownership; editing, exporting and updating recruiter decisions enforce ownership too.
 - Empty/malformed embeddings, jobs without experience requirements and one-sided skill requirements produce valid scores; invalid ranking weights are rejected.
-- Re-ranking refreshes score explanations while preserving recruiter decisions.
+- Re-ranking refreshes score explanations while preserving recruiter decisions. Explicit source date ranges are validated even if AI extraction drops a date; invalid chronology produces a quality warning and the existing HIGH anomaly penalty.
 - Registration returns useful, sanitized errors for duplicate accounts and unavailable databases, with a support reference for server logs.
 
 No Prisma schema change is required for these features. Existing dependency audit findings should be reviewed separately before claiming a security-complete release.
