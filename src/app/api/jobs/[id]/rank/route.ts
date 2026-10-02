@@ -4,12 +4,14 @@ import { RankingWeightsSchema } from '../../../../../schemas/validation.schema';
 import { MatchingService } from '../../../../../services/matching.service';
 import { ValidationError, NotFoundError } from '../../../../../core/errors';
 import { prisma } from '../../../../../lib/prisma';
+import { requireRecruiter, requireOwner } from '@/lib/recruiter-access';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await requireRecruiter();
     const { id: jobId } = await params;
 
     // Verify job exists
@@ -17,6 +19,7 @@ export async function POST(
     if (!jobExists) {
       throw new NotFoundError(`Job Description with ID ${jobId} was not found.`);
     }
+    requireOwner(user, jobExists.userId);
 
     // Retrieve and parse optional custom weights
     let customWeights: Record<string, number> | undefined = undefined;

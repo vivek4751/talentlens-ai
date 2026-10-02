@@ -3,12 +3,14 @@ import { handleError } from '../../../../../core/errors/handler';
 import { GeminiService } from '../../../../../services/gemini.service';
 import { NotFoundError } from '../../../../../core/errors';
 import { prisma } from '../../../../../lib/prisma';
+import { requireRecruiter, requireOwner } from '@/lib/recruiter-access';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await requireRecruiter();
     const { id: matchId } = await params;
 
     // Retrieve match details along with candidate and job specifications
@@ -23,6 +25,7 @@ export async function POST(
     if (!match) {
       throw new NotFoundError(`Match report with ID ${matchId} was not found.`);
     }
+    requireOwner(user, match.job.userId);
 
     // Call Gemini Service to synthesize Explainable AI profile details
     const explanation = await GeminiService.generateMatchExplanation(

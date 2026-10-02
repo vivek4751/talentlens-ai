@@ -9,7 +9,9 @@ export class PdfParserService {
    */
   public static async parsePdf(buffer: Buffer): Promise<string> {
     try {
-      const data = await pdf(buffer);
+      // Older PDF.js versions can read the whole pooled Buffer backing store,
+      // ignoring its byte offset. Give the parser an isolated, exact byte array.
+      const data = await pdf(Uint8Array.from(buffer));
       const text = data?.text?.trim();
       if (!text) {
         throw new ParsingError('Failed to extract text from PDF; parsed document is empty.');

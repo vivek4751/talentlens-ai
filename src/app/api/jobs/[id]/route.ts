@@ -39,6 +39,9 @@ export async function PUT(
     if (!existingJob) {
       return NextResponse.json({ message: "Job not found" }, { status: 404 });
     }
+    if (role !== 'admin' && existingJob.userId !== session.user.id) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
 
     const updateData: any = {};
     if (title !== undefined) updateData.title = title;
@@ -115,6 +118,9 @@ export async function DELETE(
 
     if (!existingJob) {
       return NextResponse.json({ message: "Job not found" }, { status: 404 });
+    }
+    if (role !== 'admin' && existingJob.userId !== session.user.id) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
     await prisma.job.delete({

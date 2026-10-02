@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "demo:benchmark": "node scripts/demo/run-benchmark.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {

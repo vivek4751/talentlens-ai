@@ -45,6 +45,9 @@ export async function POST(
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
+    if (role !== 'admin' && job.userId !== session.user.id) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
     const userId = session.user.id;
 
     const arrayBuffer = await file.arrayBuffer();

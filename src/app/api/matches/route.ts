@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
       }
       where.candidateId = candidateRecord.id;
     } else {
+      if (role !== 'admin') where.job = { userId: session.user.id };
       if (jobId) {
         where.jobId = jobId;
       }

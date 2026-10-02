@@ -1,0 +1,638 @@
+{
+  "version": "talentlens-demo-v1",
+  "generatedAt": "2026-10-02T05:17:21.265Z",
+  "limitation": "Synthetic demonstration: 12 fictional resumes, 3 jobs and 36 manually labeled pairs. Uses structured profiles with semantic scoring disabled. Does not measure Gemini parsing, real embeddings, hiring accuracy, network or database latency. Labels are not independently reviewed or held out.",
+  "labelPolicy": "Relevance is role-specific: direct implementation experience and required skills matter; juniors, adjacent roles and deliberate data inconsistencies are included. Relevant for precision/MRR means grade >= 2.",
+  "candidateCount": 12,
+  "jobCount": 3,
+  "pairCount": 36,
+  "weights": {
+    "semantic": 0,
+    "skills": 0.3125,
+    "experience": 0.25,
+    "education": 0.125,
+    "career_progression": 0.1875,
+    "availability": 0.125
+  },
+  "semanticEmbeddingsUsed": false,
+  "metrics": {
+    "precisionAt3": 0.8888888888888888,
+    "ndcgAt3": 1,
+    "meanReciprocalRank": 1
+  },
+  "timing": {
+    "repetitions": 200,
+    "warmupBatches": 5,
+    "scope": "TypeScript scorer only, 36 pairs per batch; includes config reads",
+    "medianBatchMs": 28.509000000000015,
+    "p95BatchMs": 41.54449999999997,
+    "runtime": "v22.19.0",
+    "platform": "win32"
+  },
+  "roles": [
+    {
+      "id": "frontend-engineer",
+      "title": "Frontend Engineer",
+      "ranked": [
+        {
+          "id": "asha-rao",
+          "name": "Asha Rao",
+          "headline": "Senior Frontend Engineer",
+          "relevance": 3,
+          "scores": {
+            "overallScore": 0.9125,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 100,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "sana-ali",
+          "name": "Sana Ali",
+          "headline": "Full Stack Engineer",
+          "relevance": 2,
+          "scores": {
+            "overallScore": 0.85,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 80,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "dev-shah",
+          "name": "Dev Shah",
+          "headline": "Frontend Engineer",
+          "relevance": 2,
+          "scores": {
+            "overallScore": 0.7875,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 60,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "mira-sen",
+          "name": "Mira Sen",
+          "headline": "Junior Web Developer",
+          "relevance": 1,
+          "scores": {
+            "overallScore": 0.74125,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 80,
+            "experienceScore": 70,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 62,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "ishan-roy",
+          "name": "Ishan Roy",
+          "headline": "QA Automation Engineer",
+          "relevance": 1,
+          "scores": {
+            "overallScore": 0.6208333333333332,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 6.666666666666667,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "kabir-das",
+          "name": "Kabir Das",
+          "headline": "Machine Learning Engineer",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "leela-nair",
+          "name": "Leela Nair",
+          "headline": "Data Scientist",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "nisha-patel",
+          "name": "Nisha Patel",
+          "headline": "Senior Backend Engineer",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "omar-iqbal",
+          "name": "Omar Iqbal",
+          "headline": "Data Analyst",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "rohan-mehta",
+          "name": "Rohan Mehta",
+          "headline": "Backend Engineer",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "tara-bose",
+          "name": "Tara Bose",
+          "headline": "Content Marketing Specialist",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.575,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 40,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "vikram-jain",
+          "name": "Vikram Jain",
+          "headline": "Frontend Engineer - Inconsistent Dates",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 100,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        }
+      ],
+      "precisionAtK": 1,
+      "ndcgAtK": 1,
+      "reciprocalRank": 1
+    },
+    {
+      "id": "ml-engineer",
+      "title": "Machine Learning Engineer",
+      "ranked": [
+        {
+          "id": "kabir-das",
+          "name": "Kabir Das",
+          "headline": "Machine Learning Engineer",
+          "relevance": 3,
+          "scores": {
+            "overallScore": 0.9125,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 100,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "leela-nair",
+          "name": "Leela Nair",
+          "headline": "Data Scientist",
+          "relevance": 2,
+          "scores": {
+            "overallScore": 0.85,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 80,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "omar-iqbal",
+          "name": "Omar Iqbal",
+          "headline": "Data Analyst",
+          "relevance": 1,
+          "scores": {
+            "overallScore": 0.7875,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 60.00000000000001,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "rohan-mehta",
+          "name": "Rohan Mehta",
+          "headline": "Backend Engineer",
+          "relevance": 1,
+          "scores": {
+            "overallScore": 0.7458333333333332,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 46.666666666666664,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "nisha-patel",
+          "name": "Nisha Patel",
+          "headline": "Senior Backend Engineer",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6833333333333335,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 26.666666666666668,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "sana-ali",
+          "name": "Sana Ali",
+          "headline": "Full Stack Engineer",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6833333333333335,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 26.666666666666668,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "ishan-roy",
+          "name": "Ishan Roy",
+          "headline": "QA Automation Engineer",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6625,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 20,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "asha-rao",
+          "name": "Asha Rao",
+          "headline": "Senior Frontend Engineer",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "dev-shah",
+          "name": "Dev Shah",
+          "headline": "Frontend Engineer",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "tara-bose",
+          "name": "Tara Bose",
+          "headline": "Content Marketing Specialist",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.575,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 40,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "mira-sen",
+          "name": "Mira Sen",
+          "headline": "Junior Web Developer",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.49125,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 70,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 62,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "vikram-jain",
+          "name": "Vikram Jain",
+          "headline": "Frontend Engineer - Inconsistent Dates",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        }
+      ],
+      "precisionAtK": 0.6666666666666666,
+      "ndcgAtK": 1,
+      "reciprocalRank": 1
+    },
+    {
+      "id": "backend-engineer",
+      "title": "Backend Engineer",
+      "ranked": [
+        {
+          "id": "nisha-patel",
+          "name": "Nisha Patel",
+          "headline": "Senior Backend Engineer",
+          "relevance": 3,
+          "scores": {
+            "overallScore": 0.9125,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 100,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "sana-ali",
+          "name": "Sana Ali",
+          "headline": "Full Stack Engineer",
+          "relevance": 2,
+          "scores": {
+            "overallScore": 0.8083333333333335,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 66.66666666666667,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "rohan-mehta",
+          "name": "Rohan Mehta",
+          "headline": "Backend Engineer",
+          "relevance": 2,
+          "scores": {
+            "overallScore": 0.7666666666666667,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 53.333333333333336,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "ishan-roy",
+          "name": "Ishan Roy",
+          "headline": "QA Automation Engineer",
+          "relevance": 1,
+          "scores": {
+            "overallScore": 0.725,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 40,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "kabir-das",
+          "name": "Kabir Das",
+          "headline": "Machine Learning Engineer",
+          "relevance": 1,
+          "scores": {
+            "overallScore": 0.6833333333333335,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 26.666666666666668,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "omar-iqbal",
+          "name": "Omar Iqbal",
+          "headline": "Data Analyst",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6625,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 20,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "leela-nair",
+          "name": "Leela Nair",
+          "headline": "Data Scientist",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.625,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 20,
+            "experienceScore": 85,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "asha-rao",
+          "name": "Asha Rao",
+          "headline": "Senior Frontend Engineer",
+          "relevance": 1,
+          "scores": {
+            "overallScore": 0.6,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "dev-shah",
+          "name": "Dev Shah",
+          "headline": "Frontend Engineer",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.6,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "tara-bose",
+          "name": "Tara Bose",
+          "headline": "Content Marketing Specialist",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.575,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 40,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "mira-sen",
+          "name": "Mira Sen",
+          "headline": "Junior Web Developer",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0.45375,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 55,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 62,
+            "availabilityScore": 100
+          }
+        },
+        {
+          "id": "vikram-jain",
+          "name": "Vikram Jain",
+          "headline": "Frontend Engineer - Inconsistent Dates",
+          "relevance": 0,
+          "scores": {
+            "overallScore": 0,
+            "semanticSimilarity": 0,
+            "skillMatchScore": 0,
+            "experienceScore": 100,
+            "educationScore": 60,
+            "domainScore": 50,
+            "careerProgressionScore": 80,
+            "availabilityScore": 100
+          }
+        }
+      ],
+      "precisionAtK": 1,
+      "ndcgAtK": 1,
+      "reciprocalRank": 1
+    }
+  ],
+  "hardware": "AMD Ryzen 5 5600H with Radeon Graphics         "
+}
