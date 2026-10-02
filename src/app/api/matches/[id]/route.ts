@@ -18,6 +18,11 @@ export async function PATCH(
     }
 
     const { id } = await params;
+    const match = await prisma.match.findUnique({ where: { id }, include: { job: true } });
+    if (!match) return NextResponse.json({ message: 'Match not found' }, { status: 404 });
+    if (role !== 'admin' && match.job.userId !== session.user.id) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
     const body = await req.json();
     const { recruiterStatus, recruiterNotes } = body;
 

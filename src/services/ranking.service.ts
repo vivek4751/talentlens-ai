@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { ValidationError } from '../core/errors';
 import { AnomalyService } from './anomaly.service';
 
 export interface ScorerConfig {
@@ -178,6 +179,11 @@ export class RankingService {
   ): ScoreBreakdown {
     const config = this.loadConfig();
     const weights = { ...config.weights, ...customWeights };
+    const values = Object.values(weights);
+    if (values.some(value => !Number.isFinite(value) || value < 0 || value > 1)
+      || Math.abs(values.reduce((sum, value) => sum + value, 0) - 1) > 0.000001) {
+      throw new ValidationError('Ranking weights must be finite, non-negative and sum to 1.');
+    }
 
     // 1. Semantic Similarity
     const semanticSimilarity = this.computeSemanticScore(candidate.embedding, job.embedding);
@@ -239,7 +245,8 @@ export class RankingService {
   // --- Sub-scorer mathematical implementations ---
 
   private static computeSemanticScore(u?: number[] | null, v?: number[] | null): number {
-    if (!u || !v || u.length === 0 || v.length === 0) return 0.0;
+    if (!u || !v || u.length === 0 || u.length !== v.length
+      || !u.every(Number.isFinite) || !v.every(Number.isFinite)) return 0.0;
 
     let dot = 0.0;
     let normU = 0.0;
@@ -279,6 +286,9 @@ export class RankingService {
       prefScore = matches / prefList.length;
     }
 
+    if (prefList.length === 0) return reqScore * 100;
+    if (reqList.length === 0) return prefScore * 100;
+
     // Blend: 80% required skills, 20% preferred skills
     return (reqScore * 0.80 + prefScore * 0.20) * 100.0;
   }
@@ -288,6 +298,7 @@ export class RankingService {
     job: JobScoringInput,
     config: ScorerConfig
   ): number {
+    if (job.experienceYears === 0) return 100;
     const yoe = candidate.yearsOfExperience;
     let targetMin = config.experience_bands.target_min;
     let targetMax = config.experience_bands.target_max;

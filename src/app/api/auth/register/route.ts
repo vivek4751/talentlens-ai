@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { issueMobileToken } from "@/lib/mobile-token";
+import { registrationError } from '@/lib/registration-error';
 
 function candidateId() {
   return `CAND_${Math.floor(1_000_000 + Math.random() * 9_000_000)}`;
@@ -58,7 +59,9 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ message: "Account created. You can now sign in.", user: responseUser }, { status: 201 });
   } catch (error) {
-    console.error("Direct registration error:", error);
-    return NextResponse.json({ message: "Unable to create your account." }, { status: 500 });
+    const failure = registrationError(error);
+    // Keep detailed database diagnostics in server logs, never in the public response.
+    console.error('Direct registration error:', { reference: failure.body.reference, error });
+    return NextResponse.json(failure.body, { status: failure.status });
   }
 }

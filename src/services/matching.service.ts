@@ -1,13 +1,15 @@
+import { AuthError } from '../core/errors';
 import { prisma } from '../lib/prisma';
 import { GeminiService } from './gemini.service';
 import { RankingService, CandidateScoringInput, JobScoringInput } from './ranking.service';
+import { DEMO_WEIGHTS, DEMO_LIMITATION } from '../demo/scenarios';
 
 export class MatchingService {
   /**
    * Helper to parse PostgreSQL vector string (e.g. "[0.1,0.2,...]") into number[]
    */
   public static parseVectorString(vectorStr?: string | null): number[] {
-    if (!vectorStr) return [];
+    if (!vectorStr || vectorStr === '[]') return [];
     return vectorStr
       .replace(/[\[\]]/g, '')
       .split(',')
@@ -82,9 +84,10 @@ export class MatchingService {
     rawResumeText: string,
     customCandidateId?: string
   ): Promise<any> {
-    const existingCandidate = await prisma.candidate.findFirst({
-      where: { userId }
-    });
+    const owner = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    if (!owner || !['candidate', 'recruiter', 'admin'].includes(owner.role)) {
+      throw new AuthError('A valid candidate or recruiter account is required.');
+    }
 
     // 1. Parse Resume using Gemini
     const parsedCandidate = await GeminiService.parseResume(rawResumeText);
@@ -92,172 +95,181 @@ export class MatchingService {
     // 2. Generate Candidate embedding
     const embedding = await GeminiService.generateEmbedding(rawResumeText);
 
-    let candidate;
+    // Parse before opening the transaction. A failed save must preserve the old profile.
+    const candidate = await prisma.$transaction(async (tx) => {
+      // Serialize uploads per account; candidates have one self-managed profile.
+      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+      const existingCandidate = owner.role === 'candidate'
+        ? await tx.candidate.findFirst({ where: { userId } })
+        : null;
+      let candidate;
 
-    if (existingCandidate) {
-      // Clean up existing nested records
-      await prisma.skill.deleteMany({ where: { candidateId: existingCandidate.id } });
-      await prisma.careerHistory.deleteMany({ where: { candidateId: existingCandidate.id } });
-      await prisma.education.deleteMany({ where: { candidateId: existingCandidate.id } });
+      if (existingCandidate) {
+        // Clean up existing nested records
+        await tx.skill.deleteMany({ where: { candidateId: existingCandidate.id } });
+        await tx.careerHistory.deleteMany({ where: { candidateId: existingCandidate.id } });
+        await tx.education.deleteMany({ where: { candidateId: existingCandidate.id } });
 
-      // Update candidate details
-      candidate = await prisma.candidate.update({
-        where: { id: existingCandidate.id },
-        data: {
-          name: this.formatCandidateName(parsedCandidate.profile.anonymizedName || existingCandidate.name),
-          rawResumeText,
-          headline: parsedCandidate.profile.headline,
-          summary: (parsedCandidate.profile.summary && parsedCandidate.profile.summary.trim() !== "" && parsedCandidate.profile.summary.toLowerCase() !== "null") ? parsedCandidate.profile.summary : null,
-          location: parsedCandidate.profile.location,
-          country: parsedCandidate.profile.country,
-          yearsOfExperience: parsedCandidate.profile.yearsOfExperience,
-          currentTitle: parsedCandidate.profile.currentTitle,
-          currentCompany: parsedCandidate.profile.currentCompany,
-          currentCompanySize: parsedCandidate.profile.currentCompanySize,
-          currentIndustry: parsedCandidate.profile.currentIndustry,
-          profileCompleteness: 100.0,
-          openToWork: true,
-        },
-      });
-    } else {
-      // Generate a unique official Candidate ID (CAND_XXXXXXX) if not provided
-      const officialCandId = customCandidateId || (await this.generateUniqueCandidateId());
+        // Update candidate details
+        candidate = await tx.candidate.update({
+          where: { id: existingCandidate.id },
+          data: {
+            name: this.formatCandidateName(parsedCandidate.profile.anonymizedName || existingCandidate.name),
+            rawResumeText,
+            headline: parsedCandidate.profile.headline,
+            summary: (parsedCandidate.profile.summary && parsedCandidate.profile.summary.trim() !== "" && parsedCandidate.profile.summary.toLowerCase() !== "null") ? parsedCandidate.profile.summary : null,
+            location: parsedCandidate.profile.location,
+            country: parsedCandidate.profile.country,
+            yearsOfExperience: parsedCandidate.profile.yearsOfExperience,
+            currentTitle: parsedCandidate.profile.currentTitle,
+            currentCompany: parsedCandidate.profile.currentCompany,
+            currentCompanySize: parsedCandidate.profile.currentCompanySize,
+            currentIndustry: parsedCandidate.profile.currentIndustry,
+            profileCompleteness: 100.0,
+            openToWork: true,
+          },
+        });
+      } else {
+        // Generate a unique official Candidate ID (CAND_XXXXXXX) if not provided
+        const officialCandId = customCandidateId || (await this.generateUniqueCandidateId());
 
-      // Save Candidate
-      candidate = await prisma.candidate.create({
-        data: {
-          userId,
-          candidateId: officialCandId,
-          name: this.formatCandidateName(parsedCandidate.profile.anonymizedName),
-          rawResumeText,
-          headline: parsedCandidate.profile.headline,
-          summary: (parsedCandidate.profile.summary && parsedCandidate.profile.summary.trim() !== "" && parsedCandidate.profile.summary.toLowerCase() !== "null") ? parsedCandidate.profile.summary : null,
-          location: parsedCandidate.profile.location,
-          country: parsedCandidate.profile.country,
-          yearsOfExperience: parsedCandidate.profile.yearsOfExperience,
-          currentTitle: parsedCandidate.profile.currentTitle,
-          currentCompany: parsedCandidate.profile.currentCompany,
-          currentCompanySize: parsedCandidate.profile.currentCompanySize,
-          currentIndustry: parsedCandidate.profile.currentIndustry,
-          // Default behavioral signal values
-          profileCompleteness: 85.0,
-          openToWork: true,
-          noticePeriodDays: 30,
-          connectionCount: 150,
-          recruiterResponse: 0.85,
-          avgResponseTime: 24.0,
-        },
-      });
-    }
+        // Save Candidate
+        candidate = await tx.candidate.create({
+          data: {
+            userId,
+            candidateId: officialCandId,
+            name: this.formatCandidateName(parsedCandidate.profile.anonymizedName),
+            rawResumeText,
+            headline: parsedCandidate.profile.headline,
+            summary: (parsedCandidate.profile.summary && parsedCandidate.profile.summary.trim() !== "" && parsedCandidate.profile.summary.toLowerCase() !== "null") ? parsedCandidate.profile.summary : null,
+            location: parsedCandidate.profile.location,
+            country: parsedCandidate.profile.country,
+            yearsOfExperience: parsedCandidate.profile.yearsOfExperience,
+            currentTitle: parsedCandidate.profile.currentTitle,
+            currentCompany: parsedCandidate.profile.currentCompany,
+            currentCompanySize: parsedCandidate.profile.currentCompanySize,
+            currentIndustry: parsedCandidate.profile.currentIndustry,
+            // Default behavioral signal values
+            profileCompleteness: 85.0,
+            openToWork: true,
+            noticePeriodDays: 30,
+            connectionCount: 150,
+            recruiterResponse: 0.85,
+            avgResponseTime: 24.0,
+          },
+        });
+      }
 
-    // 5. Save embedding vector
-    const vectorStr = this.formatVectorString(embedding);
-    await prisma.$executeRawUnsafe(
-      `UPDATE "Candidate" SET "embedding" = $1::vector WHERE "id" = $2`,
-      vectorStr,
-      candidate.id
-    );
+      // 5. Save embedding vector
+      const vectorStr = this.formatVectorString(embedding);
+      await tx.$executeRawUnsafe(
+        `UPDATE "Candidate" SET "embedding" = $1::vector WHERE "id" = $2`,
+        vectorStr,
+        candidate.id
+      );
 
-    // 6. Save nested Skills
-    if (parsedCandidate.skills && parsedCandidate.skills.length > 0) {
-      await prisma.skill.createMany({
-        data: parsedCandidate.skills.map((s) => ({
-          candidateId: candidate.id,
-          name: s.name,
-          proficiency: s.proficiency,
-          endorsements: s.endorsements,
-          durationMonths: s.durationMonths,
-        })),
-      });
-    }
-
-    // 7. Save Career History
-    if (parsedCandidate.careerHistory && parsedCandidate.careerHistory.length > 0) {
-      const parseDateSafely = (dateVal: any): Date | null => {
-        if (!dateVal) return null;
-        if (typeof dateVal !== "string") {
-          if (dateVal instanceof Date && !isNaN(dateVal.getTime())) {
-            return dateVal;
-          }
-          return null;
-        }
-        const cleaned = dateVal.trim();
-        if (
-          cleaned === "" ||
-          cleaned.toLowerCase() === "null" ||
-          cleaned.toLowerCase() === "present" ||
-          cleaned.toLowerCase() === "current" ||
-          cleaned.toLowerCase() === "undefined"
-        ) {
-          return null;
-        }
-        const dateObj = new Date(cleaned);
-        if (isNaN(dateObj.getTime())) {
-          return null;
-        }
-        return dateObj;
-      };
-
-      const cleanNullableString = (val: any) => {
-        if (val === null || val === undefined) return null;
-        const strVal = String(val).trim();
-        if (strVal.toLowerCase() === "null" || strVal.toLowerCase() === "undefined" || strVal === "") {
-          return null;
-        }
-        return strVal;
-      };
-
-      await prisma.careerHistory.createMany({
-        data: parsedCandidate.careerHistory.map((ch) => {
-          const startDate = parseDateSafely(ch.startDate);
-          let endDate = parseDateSafely(ch.endDate);
-          let isCurrent = ch.isCurrent;
-
-          const rawEnd = typeof ch.endDate === "string" ? ch.endDate.trim().toLowerCase() : "";
-          if (
-            !ch.endDate ||
-            rawEnd === "" ||
-            rawEnd === "present" ||
-            rawEnd === "current" ||
-            rawEnd === "undefined" ||
-            rawEnd === "null" ||
-            !endDate
-          ) {
-            endDate = null;
-            isCurrent = true;
-          }
-
-          return {
+      // 6. Save nested Skills
+      if (parsedCandidate.skills && parsedCandidate.skills.length > 0) {
+        await tx.skill.createMany({
+          data: parsedCandidate.skills.map((s) => ({
             candidateId: candidate.id,
-            company: cleanNullableString(ch.company) || "Unknown Company",
-            title: cleanNullableString(ch.title) || "Unknown Title",
-            startDate,
-            endDate,
-            durationMonths: typeof ch.durationMonths === "number" ? ch.durationMonths : 0,
-            isCurrent: !!isCurrent,
-            industry: cleanNullableString(ch.industry),
-            companySize: cleanNullableString(ch.companySize),
-            description: cleanNullableString(ch.description),
-          };
-        }),
-      });
-    }
+            name: s.name,
+            proficiency: s.proficiency,
+            endorsements: s.endorsements,
+            durationMonths: s.durationMonths,
+          })),
+        });
+      }
 
-    // 8. Save Education
-    if (parsedCandidate.education && parsedCandidate.education.length > 0) {
-      await prisma.education.createMany({
-        data: parsedCandidate.education.map((e) => ({
-          candidateId: candidate.id,
-          institution: e.institution,
-          degree: e.degree,
-          fieldOfStudy: e.fieldOfStudy,
-          startYear: e.startYear,
-          endYear: e.endYear,
-          grade: e.grade,
-          tier: e.tier,
-        })),
-      });
-    }
+      // 7. Save Career History
+      if (parsedCandidate.careerHistory && parsedCandidate.careerHistory.length > 0) {
+        const parseDateSafely = (dateVal: any): Date | null => {
+          if (!dateVal) return null;
+          if (typeof dateVal !== "string") {
+            if (dateVal instanceof Date && !isNaN(dateVal.getTime())) {
+              return dateVal;
+            }
+            return null;
+          }
+          const cleaned = dateVal.trim();
+          if (
+            cleaned === "" ||
+            cleaned.toLowerCase() === "null" ||
+            cleaned.toLowerCase() === "present" ||
+            cleaned.toLowerCase() === "current" ||
+            cleaned.toLowerCase() === "undefined"
+          ) {
+            return null;
+          }
+          const dateObj = new Date(cleaned);
+          if (isNaN(dateObj.getTime())) {
+            return null;
+          }
+          return dateObj;
+        };
+
+        const cleanNullableString = (val: any) => {
+          if (val === null || val === undefined) return null;
+          const strVal = String(val).trim();
+          if (strVal.toLowerCase() === "null" || strVal.toLowerCase() === "undefined" || strVal === "") {
+            return null;
+          }
+          return strVal;
+        };
+
+        await tx.careerHistory.createMany({
+          data: parsedCandidate.careerHistory.map((ch) => {
+            const startDate = parseDateSafely(ch.startDate);
+            let endDate = parseDateSafely(ch.endDate);
+            let isCurrent = ch.isCurrent;
+
+            const rawEnd = typeof ch.endDate === "string" ? ch.endDate.trim().toLowerCase() : "";
+            if (
+              !ch.endDate ||
+              rawEnd === "" ||
+              rawEnd === "present" ||
+              rawEnd === "current" ||
+              rawEnd === "undefined" ||
+              rawEnd === "null" ||
+              !endDate
+            ) {
+              endDate = null;
+              isCurrent = true;
+            }
+
+            return {
+              candidateId: candidate.id,
+              company: cleanNullableString(ch.company) || "Unknown Company",
+              title: cleanNullableString(ch.title) || "Unknown Title",
+              startDate,
+              endDate,
+              durationMonths: typeof ch.durationMonths === "number" ? ch.durationMonths : 0,
+              isCurrent: !!isCurrent,
+              industry: cleanNullableString(ch.industry),
+              companySize: cleanNullableString(ch.companySize),
+              description: cleanNullableString(ch.description),
+            };
+          }),
+        });
+      }
+
+      // 8. Save Education
+      if (parsedCandidate.education && parsedCandidate.education.length > 0) {
+        await tx.education.createMany({
+          data: parsedCandidate.education.map((e) => ({
+            candidateId: candidate.id,
+            institution: e.institution,
+            degree: e.degree,
+            fieldOfStudy: e.fieldOfStudy,
+            startYear: e.startYear,
+            endYear: e.endYear,
+            grade: e.grade,
+            tier: e.tier,
+          })),
+        });
+      }
+      return candidate;
+    }, { timeout: 20000 });
 
     // 9. Re-run candidate matching against all jobs
     await this.runCandidateMatching(candidate.id);
@@ -276,6 +288,7 @@ export class MatchingService {
     if (!job) {
       throw new Error(`Job description not found for ID: ${jobId}`);
     }
+    const demoPrefix = jobId.startsWith('demo-') ? jobId.split('-').slice(0, 2).join('-') + '-' : null;
 
     // 2. Fetch Job Embedding
     const jdEmbedResult = await prisma.$queryRawUnsafe<any[]>(
@@ -294,6 +307,7 @@ export class MatchingService {
 
     // 3. Fetch all Candidates with full details
     const candidates = await prisma.candidate.findMany({
+      where: demoPrefix ? { id: { startsWith: demoPrefix } } : { NOT: { id: { startsWith: 'demo-' } } },
       include: {
         skills: true,
         careerHistory: true,
@@ -339,7 +353,7 @@ export class MatchingService {
       };
 
       // Calculate Hybrid score
-      const breakdown = RankingService.scoreCandidate(candScoringInput, jobScoringInput, customWeights);
+      const breakdown = RankingService.scoreCandidate(candScoringInput, jobScoringInput, customWeights ?? (demoPrefix ? DEMO_WEIGHTS : undefined));
 
       // Generate rule-based basic reasoning to populate initially
       const strengths: string[] = [];
@@ -373,7 +387,7 @@ export class MatchingService {
         weaknesses.push(`Missing some required skills: ${missingSkills.slice(0, 3).join(', ')}.`);
       }
 
-      const hiringRecommendation = `Candidate ${candidate.name} exhibits an overall fit of ${(breakdown.overallScore * 100).toFixed(1)}%. Key skills are ${candidate.skills.slice(0, 3).map((s) => s.name).join(', ')}.`;
+      const hiringRecommendation = demoPrefix ? DEMO_LIMITATION : `Candidate ${candidate.name} exhibits an overall fit of ${(breakdown.overallScore * 100).toFixed(1)}%. Key skills are ${candidate.skills.slice(0, 3).map((s) => s.name).join(', ')}.`;
 
       // 5. Save/Update Match record
       await prisma.match.upsert({
@@ -412,6 +426,11 @@ export class MatchingService {
           domainScore: breakdown.domainScore,
           careerProgressionScore: breakdown.careerProgressionScore,
           availabilityScore: breakdown.availabilityScore,
+          strengths,
+          weaknesses,
+          missingSkills,
+          hiringRecommendation,
+          improvementSuggestions: [],
         },
       });
 
@@ -492,7 +511,10 @@ export class MatchingService {
     };
 
     // 3. Fetch all Jobs
-    const jobs = await prisma.job.findMany();
+    const demoPrefix = candidate.id.startsWith('demo-') ? candidate.id.split('-').slice(0, 2).join('-') + '-' : null;
+    const jobs = await prisma.job.findMany({
+      where: demoPrefix ? { id: { startsWith: demoPrefix } } : { NOT: { id: { startsWith: 'demo-' } } },
+    });
 
     // Fetch Job Embeddings map
     const jobEmbedResults = await prisma.$queryRawUnsafe<any[]>(
@@ -518,7 +540,7 @@ export class MatchingService {
         embedding: jobEmbedding || null,
       };
 
-      const breakdown = RankingService.scoreCandidate(candScoringInput, jobScoringInput);
+      const breakdown = RankingService.scoreCandidate(candScoringInput, jobScoringInput, demoPrefix ? DEMO_WEIGHTS : undefined);
 
       const strengths: string[] = [];
       const weaknesses: string[] = [];
@@ -589,6 +611,7 @@ export class MatchingService {
           weaknesses,
           missingSkills,
           hiringRecommendation,
+          improvementSuggestions: [],
         },
       });
 

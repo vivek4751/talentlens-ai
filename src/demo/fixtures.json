@@ -1,0 +1,933 @@
+{
+  "version": "talentlens-demo-v1",
+  "description": "12 fictional profiles and 3 fictional jobs; 36 manually judged pairs. Labels were authored from the role scenarios before scoring. This is a demonstration set, not a held-out or independently reviewed accuracy benchmark.",
+  "relevanceScale": {
+    "0": "Unsuitable or deliberately inconsistent evidence",
+    "1": "Partial or junior fit; substantial gaps",
+    "2": "Relevant candidate with some gaps",
+    "3": "Strong direct fit"
+  },
+  "labelPolicy": "Relevance is role-specific: direct implementation experience and required skills matter; juniors, adjacent roles and deliberate data inconsistencies are included. Relevant for precision/MRR means grade >= 2.",
+  "jobs": [
+    {
+      "id": "frontend-engineer",
+      "title": "Frontend Engineer",
+      "rawDescription": "SYNTHETIC DEMO JOB - NOT AN OPEN VACANCY\nFrontend Engineer\nCompany: Example Product Studio (fictional)\nMinimum experience: 3 years\nRequired skills: TypeScript, React, CSS\nPreferred skills: Next.js, Testing, Accessibility\nResponsibilities: Build accessible web interfaces, maintain typed component libraries, and write automated interface tests.\nEducation: Any relevant technical qualification or equivalent practical experience.\nWork arrangement: Flexible. All details are fictional and intended for a software demonstration.",
+      "profile": {
+        "experienceYears": 3,
+        "requiredSkills": [
+          "TypeScript",
+          "React",
+          "CSS"
+        ],
+        "preferredSkills": [
+          "Next.js",
+          "Testing",
+          "Accessibility"
+        ],
+        "preferProductCompany": false,
+        "embedding": null
+      }
+    },
+    {
+      "id": "ml-engineer",
+      "title": "Machine Learning Engineer",
+      "rawDescription": "SYNTHETIC DEMO JOB - NOT AN OPEN VACANCY\nMachine Learning Engineer\nCompany: Example Product Studio (fictional)\nMinimum experience: 3 years\nRequired skills: Python, SQL, scikit-learn, Pandas\nPreferred skills: PyTorch, Docker, MLOps\nResponsibilities: Build reproducible model pipelines, design validation experiments, and deploy monitored inference services.\nEducation: Any relevant technical qualification or equivalent practical experience.\nWork arrangement: Flexible. All details are fictional and intended for a software demonstration.",
+      "profile": {
+        "experienceYears": 3,
+        "requiredSkills": [
+          "Python",
+          "SQL",
+          "scikit-learn",
+          "Pandas"
+        ],
+        "preferredSkills": [
+          "PyTorch",
+          "Docker",
+          "MLOps"
+        ],
+        "preferProductCompany": false,
+        "embedding": null
+      }
+    },
+    {
+      "id": "backend-engineer",
+      "title": "Backend Engineer",
+      "rawDescription": "SYNTHETIC DEMO JOB - NOT AN OPEN VACANCY\nBackend Engineer\nCompany: Example Product Studio (fictional)\nMinimum experience: 4 years\nRequired skills: Java, Spring Boot, SQL, REST APIs\nPreferred skills: Docker, AWS, Kafka\nResponsibilities: Build reliable Java APIs, maintain transactional storage, and operate event-driven backend services.\nEducation: Any relevant technical qualification or equivalent practical experience.\nWork arrangement: Flexible. All details are fictional and intended for a software demonstration.",
+      "profile": {
+        "experienceYears": 4,
+        "requiredSkills": [
+          "Java",
+          "Spring Boot",
+          "SQL",
+          "REST APIs"
+        ],
+        "preferredSkills": [
+          "Docker",
+          "AWS",
+          "Kafka"
+        ],
+        "preferProductCompany": false,
+        "embedding": null
+      }
+    }
+  ],
+  "candidates": [
+    {
+      "id": "asha-rao",
+      "name": "Asha Rao",
+      "headline": "Senior Frontend Engineer",
+      "summary": "Designed accessible React interfaces and reusable TypeScript components for a fictional scheduling product. Added browser tests and improved page loading through code splitting.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nAsha Rao\nSenior Frontend Engineer\nLocation: Bengaluru, India (fictional profile)\nSummary: Designed accessible React interfaces and reusable TypeScript components for a fictional scheduling product. Added browser tests and improved page loading through code splitting.\nTotal experience: 6 years\nSkills: TypeScript, React, Next.js, CSS, Testing, Accessibility\nExperience: Senior Frontend Engineer at Example Product Studio (fictional)\nDates: 2020-01-01 to 2026-01-01\nResponsibilities: Designed accessible React interfaces and reusable TypeScript components for a fictional scheduling product. Added browser tests and improved page loading through code splitting.\nEducation: B.Tech in Computer Science, Example Institute of Technology (fictional)\nEducation years: 2012 to 2016\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 6,
+        "skills": [
+          {
+            "name": "TypeScript",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "React",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "Next.js",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "CSS",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "Testing",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "Accessibility",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "Senior Frontend Engineer",
+            "startDate": "2020-01-01",
+            "endDate": "2026-01-01",
+            "durationMonths": 72,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.Tech",
+            "fieldOfStudy": "Computer Science",
+            "startYear": 2012,
+            "endYear": 2016,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "dev-shah",
+      "name": "Dev Shah",
+      "headline": "Frontend Engineer",
+      "summary": "Built responsive customer dashboards with React and CSS. Maintained component tests and collaborated with designers on keyboard navigation.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nDev Shah\nFrontend Engineer\nLocation: Bengaluru, India (fictional profile)\nSummary: Built responsive customer dashboards with React and CSS. Maintained component tests and collaborated with designers on keyboard navigation.\nTotal experience: 4 years\nSkills: JavaScript, React, CSS, Testing, Vue\nExperience: Frontend Engineer at Example Product Studio (fictional)\nDates: 2022-01-01 to 2026-01-01\nResponsibilities: Built responsive customer dashboards with React and CSS. Maintained component tests and collaborated with designers on keyboard navigation.\nEducation: B.Tech in Computer Science, Example Institute of Technology (fictional)\nEducation years: 2012 to 2016\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 4,
+        "skills": [
+          {
+            "name": "JavaScript",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "React",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "CSS",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "Testing",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "Vue",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "Frontend Engineer",
+            "startDate": "2022-01-01",
+            "endDate": "2026-01-01",
+            "durationMonths": 48,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.Tech",
+            "fieldOfStudy": "Computer Science",
+            "startYear": 2012,
+            "endYear": 2016,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mira-sen",
+      "name": "Mira Sen",
+      "headline": "Junior Web Developer",
+      "summary": "Completed a one-year junior web role. Built a React task planner, typed API responses, and responsive layouts under senior review.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nMira Sen\nJunior Web Developer\nLocation: Bengaluru, India (fictional profile)\nSummary: Completed a one-year junior web role. Built a React task planner, typed API responses, and responsive layouts under senior review.\nTotal experience: 1 years\nSkills: TypeScript, React, CSS, Git\nExperience: Junior Web Developer at Example Product Studio (fictional)\nDates: 2025-01-01 to 2026-01-01\nResponsibilities: Completed a one-year junior web role. Built a React task planner, typed API responses, and responsive layouts under senior review.\nEducation: B.Tech in Computer Science, Example Institute of Technology (fictional)\nEducation years: 2021 to 2025\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 1,
+        "skills": [
+          {
+            "name": "TypeScript",
+            "proficiency": "intermediate",
+            "durationMonths": 12
+          },
+          {
+            "name": "React",
+            "proficiency": "intermediate",
+            "durationMonths": 12
+          },
+          {
+            "name": "CSS",
+            "proficiency": "intermediate",
+            "durationMonths": 12
+          },
+          {
+            "name": "Git",
+            "proficiency": "intermediate",
+            "durationMonths": 12
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "Junior Web Developer",
+            "startDate": "2025-01-01",
+            "endDate": "2026-01-01",
+            "durationMonths": 12,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.Tech",
+            "fieldOfStudy": "Computer Science",
+            "startYear": 2021,
+            "endYear": 2025,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "kabir-das",
+      "name": "Kabir Das",
+      "headline": "Machine Learning Engineer",
+      "summary": "Built and deployed a fictional ticket-classification pipeline. Used stratified evaluation, tracked model drift, and packaged inference services with Docker.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nKabir Das\nMachine Learning Engineer\nLocation: Bengaluru, India (fictional profile)\nSummary: Built and deployed a fictional ticket-classification pipeline. Used stratified evaluation, tracked model drift, and packaged inference services with Docker.\nTotal experience: 5 years\nSkills: Python, SQL, scikit-learn, Pandas, PyTorch, Docker, MLOps\nExperience: Machine Learning Engineer at Example Product Studio (fictional)\nDates: 2021-01-01 to 2026-01-01\nResponsibilities: Built and deployed a fictional ticket-classification pipeline. Used stratified evaluation, tracked model drift, and packaged inference services with Docker.\nEducation: B.Tech in Computer Science, Example Institute of Technology (fictional)\nEducation years: 2012 to 2016\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 5,
+        "skills": [
+          {
+            "name": "Python",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "SQL",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "scikit-learn",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "Pandas",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "PyTorch",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "Docker",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "MLOps",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "Machine Learning Engineer",
+            "startDate": "2021-01-01",
+            "endDate": "2026-01-01",
+            "durationMonths": 60,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.Tech",
+            "fieldOfStudy": "Computer Science",
+            "startYear": 2012,
+            "endYear": 2016,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        0,
+        3,
+        1
+      ]
+    },
+    {
+      "id": "leela-nair",
+      "name": "Leela Nair",
+      "headline": "Data Scientist",
+      "summary": "Developed demand-forecasting experiments for a fictional inventory system. Created reproducible feature pipelines, validation splits, and error analysis reports.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nLeela Nair\nData Scientist\nLocation: Bengaluru, India (fictional profile)\nSummary: Developed demand-forecasting experiments for a fictional inventory system. Created reproducible feature pipelines, validation splits, and error analysis reports.\nTotal experience: 3 years\nSkills: Python, SQL, scikit-learn, Pandas, Statistics\nExperience: Data Scientist at Example Product Studio (fictional)\nDates: 2023-01-01 to 2026-01-01\nResponsibilities: Developed demand-forecasting experiments for a fictional inventory system. Created reproducible feature pipelines, validation splits, and error analysis reports.\nEducation: B.Tech in Computer Science, Example Institute of Technology (fictional)\nEducation years: 2012 to 2016\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 3,
+        "skills": [
+          {
+            "name": "Python",
+            "proficiency": "intermediate",
+            "durationMonths": 36
+          },
+          {
+            "name": "SQL",
+            "proficiency": "intermediate",
+            "durationMonths": 36
+          },
+          {
+            "name": "scikit-learn",
+            "proficiency": "intermediate",
+            "durationMonths": 36
+          },
+          {
+            "name": "Pandas",
+            "proficiency": "intermediate",
+            "durationMonths": 36
+          },
+          {
+            "name": "Statistics",
+            "proficiency": "intermediate",
+            "durationMonths": 36
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "Data Scientist",
+            "startDate": "2023-01-01",
+            "endDate": "2026-01-01",
+            "durationMonths": 36,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.Tech",
+            "fieldOfStudy": "Computer Science",
+            "startYear": 2012,
+            "endYear": 2016,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "id": "omar-iqbal",
+      "name": "Omar Iqbal",
+      "headline": "Data Analyst",
+      "summary": "Prepared SQL reporting datasets, cleaned data with Pandas, and created business dashboards. Has introductory model evaluation experience but no production ML deployment.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nOmar Iqbal\nData Analyst\nLocation: Bengaluru, India (fictional profile)\nSummary: Prepared SQL reporting datasets, cleaned data with Pandas, and created business dashboards. Has introductory model evaluation experience but no production ML deployment.\nTotal experience: 4 years\nSkills: SQL, Python, Pandas, Excel, Tableau\nExperience: Data Analyst at Example Product Studio (fictional)\nDates: 2022-01-01 to 2026-01-01\nResponsibilities: Prepared SQL reporting datasets, cleaned data with Pandas, and created business dashboards. Has introductory model evaluation experience but no production ML deployment.\nEducation: B.Tech in Computer Science, Example Institute of Technology (fictional)\nEducation years: 2012 to 2016\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 4,
+        "skills": [
+          {
+            "name": "SQL",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "Python",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "Pandas",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "Excel",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "Tableau",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "Data Analyst",
+            "startDate": "2022-01-01",
+            "endDate": "2026-01-01",
+            "durationMonths": 48,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.Tech",
+            "fieldOfStudy": "Computer Science",
+            "startYear": 2012,
+            "endYear": 2016,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "id": "nisha-patel",
+      "name": "Nisha Patel",
+      "headline": "Senior Backend Engineer",
+      "summary": "Designed Java and Spring Boot order-processing APIs for a fictional retail platform. Implemented transactional SQL persistence, event consumers, and container deployment.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nNisha Patel\nSenior Backend Engineer\nLocation: Bengaluru, India (fictional profile)\nSummary: Designed Java and Spring Boot order-processing APIs for a fictional retail platform. Implemented transactional SQL persistence, event consumers, and container deployment.\nTotal experience: 6 years\nSkills: Java, Spring Boot, SQL, REST APIs, Docker, AWS, Kafka\nExperience: Senior Backend Engineer at Example Product Studio (fictional)\nDates: 2020-01-01 to 2026-01-01\nResponsibilities: Designed Java and Spring Boot order-processing APIs for a fictional retail platform. Implemented transactional SQL persistence, event consumers, and container deployment.\nEducation: B.Tech in Computer Science, Example Institute of Technology (fictional)\nEducation years: 2012 to 2016\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 6,
+        "skills": [
+          {
+            "name": "Java",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "Spring Boot",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "SQL",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "REST APIs",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "Docker",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "AWS",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "Kafka",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "Senior Backend Engineer",
+            "startDate": "2020-01-01",
+            "endDate": "2026-01-01",
+            "durationMonths": 72,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.Tech",
+            "fieldOfStudy": "Computer Science",
+            "startYear": 2012,
+            "endYear": 2016,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "id": "rohan-mehta",
+      "name": "Rohan Mehta",
+      "headline": "Backend Engineer",
+      "summary": "Developed Python and Node.js APIs, SQL migrations, queue workers, and integration tests for a fictional logistics service. Limited Java and no Spring Boot experience.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nRohan Mehta\nBackend Engineer\nLocation: Bengaluru, India (fictional profile)\nSummary: Developed Python and Node.js APIs, SQL migrations, queue workers, and integration tests for a fictional logistics service. Limited Java and no Spring Boot experience.\nTotal experience: 4 years\nSkills: Python, SQL, REST APIs, Docker, Node.js, Kafka\nExperience: Backend Engineer at Example Product Studio (fictional)\nDates: 2022-01-01 to 2026-01-01\nResponsibilities: Developed Python and Node.js APIs, SQL migrations, queue workers, and integration tests for a fictional logistics service. Limited Java and no Spring Boot experience.\nEducation: B.Tech in Computer Science, Example Institute of Technology (fictional)\nEducation years: 2012 to 2016\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 4,
+        "skills": [
+          {
+            "name": "Python",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "SQL",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "REST APIs",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "Docker",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "Node.js",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          },
+          {
+            "name": "Kafka",
+            "proficiency": "intermediate",
+            "durationMonths": 48
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "Backend Engineer",
+            "startDate": "2022-01-01",
+            "endDate": "2026-01-01",
+            "durationMonths": 48,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.Tech",
+            "fieldOfStudy": "Computer Science",
+            "startYear": 2012,
+            "endYear": 2016,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": "sana-ali",
+      "name": "Sana Ali",
+      "headline": "Full Stack Engineer",
+      "summary": "Delivered React interfaces and REST APIs for a fictional collaboration tool. Wrote SQL queries and integration tests and supported Java services.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nSana Ali\nFull Stack Engineer\nLocation: Bengaluru, India (fictional profile)\nSummary: Delivered React interfaces and REST APIs for a fictional collaboration tool. Wrote SQL queries and integration tests and supported Java services.\nTotal experience: 5 years\nSkills: TypeScript, React, CSS, SQL, REST APIs, Node.js, Docker, Java\nExperience: Full Stack Engineer at Example Product Studio (fictional)\nDates: 2021-01-01 to 2026-01-01\nResponsibilities: Delivered React interfaces and REST APIs for a fictional collaboration tool. Wrote SQL queries and integration tests and supported Java services.\nEducation: B.Tech in Computer Science, Example Institute of Technology (fictional)\nEducation years: 2012 to 2016\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 5,
+        "skills": [
+          {
+            "name": "TypeScript",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "React",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "CSS",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "SQL",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "REST APIs",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "Node.js",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "Docker",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "Java",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "Full Stack Engineer",
+            "startDate": "2021-01-01",
+            "endDate": "2026-01-01",
+            "durationMonths": 60,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.Tech",
+            "fieldOfStudy": "Computer Science",
+            "startYear": 2012,
+            "endYear": 2016,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        2,
+        0,
+        2
+      ]
+    },
+    {
+      "id": "ishan-roy",
+      "name": "Ishan Roy",
+      "headline": "QA Automation Engineer",
+      "summary": "Maintained Selenium regression suites, Java test utilities, and SQL test-data checks. Focused on quality engineering rather than product feature development.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nIshan Roy\nQA Automation Engineer\nLocation: Bengaluru, India (fictional profile)\nSummary: Maintained Selenium regression suites, Java test utilities, and SQL test-data checks. Focused on quality engineering rather than product feature development.\nTotal experience: 5 years\nSkills: Java, Selenium, Testing, SQL, CI/CD\nExperience: QA Automation Engineer at Example Product Studio (fictional)\nDates: 2021-01-01 to 2026-01-01\nResponsibilities: Maintained Selenium regression suites, Java test utilities, and SQL test-data checks. Focused on quality engineering rather than product feature development.\nEducation: B.Tech in Computer Science, Example Institute of Technology (fictional)\nEducation years: 2012 to 2016\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 5,
+        "skills": [
+          {
+            "name": "Java",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "Selenium",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "Testing",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "SQL",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "CI/CD",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "QA Automation Engineer",
+            "startDate": "2021-01-01",
+            "endDate": "2026-01-01",
+            "durationMonths": 60,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.Tech",
+            "fieldOfStudy": "Computer Science",
+            "startYear": 2012,
+            "endYear": 2016,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        1,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "tara-bose",
+      "name": "Tara Bose",
+      "headline": "Content Marketing Specialist",
+      "summary": "Planned editorial calendars and maintained CRM content for a fictional education company. No software engineering or machine learning work experience.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nTara Bose\nContent Marketing Specialist\nLocation: Bengaluru, India (fictional profile)\nSummary: Planned editorial calendars and maintained CRM content for a fictional education company. No software engineering or machine learning work experience.\nTotal experience: 6 years\nSkills: SEO, Content Strategy, CRM, Copywriting\nExperience: Content Marketing Specialist at Example Product Studio (fictional)\nDates: 2020-01-01 to 2026-01-01\nResponsibilities: Planned editorial calendars and maintained CRM content for a fictional education company. No software engineering or machine learning work experience.\nEducation: B.A. in Communications, Example Institute of Technology (fictional)\nEducation years: 2012 to 2016\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 6,
+        "skills": [
+          {
+            "name": "SEO",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "Content Strategy",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "CRM",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          },
+          {
+            "name": "Copywriting",
+            "proficiency": "intermediate",
+            "durationMonths": 72
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "Content Marketing Specialist",
+            "startDate": "2020-01-01",
+            "endDate": "2026-01-01",
+            "durationMonths": 72,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.A.",
+            "fieldOfStudy": "Communications",
+            "startYear": 2012,
+            "endYear": 2016,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "vikram-jain",
+      "name": "Vikram Jain",
+      "headline": "Frontend Engineer - Inconsistent Dates",
+      "summary": "Synthetic data-quality test: this resume deliberately contains a role with a start date later than its end date. It is included to demonstrate a warning, not to represent a real person.",
+      "rawResumeText": "SYNTHETIC DEMO RESUME - NOT A REAL PERSON\nVikram Jain\nFrontend Engineer - Inconsistent Dates\nLocation: Bengaluru, India (fictional profile)\nSummary: Synthetic data-quality test: this resume deliberately contains a role with a start date later than its end date. It is included to demonstrate a warning, not to represent a real person.\nTotal experience: 5 years\nSkills: TypeScript, React, Next.js, CSS, Testing, Accessibility\nExperience: Frontend Engineer - Inconsistent Dates at Example Product Studio (fictional)\nDates: 2025-01-01 to 2022-01-01\nResponsibilities: Synthetic data-quality test: this resume deliberately contains a role with a start date later than its end date. It is included to demonstrate a warning, not to represent a real person.\nEducation: B.Tech in Computer Science, Example Institute of Technology (fictional)\nEducation years: 2012 to 2016\nAvailability: Open to work; 30-day notice period.\nAll experience and achievements are fictional. Demo snapshot: January 2026.",
+      "profile": {
+        "yearsOfExperience": 5,
+        "skills": [
+          {
+            "name": "TypeScript",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "React",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "Next.js",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "CSS",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "Testing",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          },
+          {
+            "name": "Accessibility",
+            "proficiency": "intermediate",
+            "durationMonths": 60
+          }
+        ],
+        "careerHistory": [
+          {
+            "company": "Example Product Studio (fictional)",
+            "title": "Frontend Engineer - Inconsistent Dates",
+            "startDate": "2025-01-01",
+            "endDate": "2022-01-01",
+            "durationMonths": 60,
+            "isCurrent": false
+          }
+        ],
+        "education": [
+          {
+            "institution": "Example Institute of Technology (fictional)",
+            "degree": "B.Tech",
+            "fieldOfStudy": "Computer Science",
+            "startYear": 2012,
+            "endYear": 2016,
+            "tier": "unknown"
+          }
+        ],
+        "noticePeriodDays": 30,
+        "openToWork": true,
+        "profileCompleteness": 100,
+        "connectionCount": 150,
+        "recruiterResponseRate": 0.85,
+        "embedding": null
+      },
+      "relevance": [
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

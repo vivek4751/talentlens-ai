@@ -29,6 +29,10 @@ export async function GET(
       return NextResponse.json({ message: "Job Posting not found" }, { status: 404 });
     }
 
+    if (role !== 'admin' && job.userId !== session.user.id) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
     // 4. Retrieve candidate matches ordered by overall score in descending order
     const matches = await prisma.match.findMany({
       where: { jobId },

@@ -11,6 +11,7 @@ export async function GET() {
     }
 
     const jobs = await prisma.job.findMany({
+      where: session.user.role === 'recruiter' ? { userId: session.user.id } : {},
       orderBy: {
         createdAt: "desc",
       },
