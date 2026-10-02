@@ -1,10 +1,14 @@
 export interface RecruiterAnalyticsFilters {
+  userId: string;
+  admin?: boolean;
   jobId?: string;
   startDate?: string;
   endDate?: string;
 }
 
 export interface RecruiterAnalyticsKPIs {
+  totalMatches: number;
+  ownedCandidates: number;
   totalJobs: number;
   totalCandidates: number;
   totalRankedCandidates: number;
@@ -32,11 +36,13 @@ export interface TopCandidateItem {
 }
 
 export interface JobOverviewItem {
+  id: string;
   title: string;
   candidates: number;
 }
 
 export interface AverageScorePerJobItem {
+  id: string;
   title: string;
   averageScore: number;
 }
@@ -48,6 +54,7 @@ export interface RecentActivityItem {
 }
 
 export interface AdditionalStats {
+  reviewRate: number;
   highestScore: number;
   lowestScore: number;
   medianScore: number;
@@ -57,6 +64,10 @@ export interface AdditionalStats {
 }
 
 export interface RecruiterAnalyticsData {
+  leaderboard: AnalyticsCandidate[];
+  hiringFunnel: { name: string; count: number }[];
+  decisions: { pending: number; shortlisted: number; rejected: number };
+  skillGaps: { skill: string; count: number }[];
   kpis: RecruiterAnalyticsKPIs;
   recommendationDistribution: RecommendationDistributionItem[];
   scoreDistribution: ScoreDistributionItem[];
@@ -65,4 +76,18 @@ export interface RecruiterAnalyticsData {
   averageScorePerJob: AverageScorePerJobItem[];
   recentActivity: RecentActivityItem[];
   statistics: AdditionalStats;
+}
+
+export interface AnalyticsCandidate {
+  id: string;
+  candidateId: string;
+  name: string;
+  title: string | null;
+  jobId: string;
+  jobTitle: string;
+  score: number;
+  status: string;
+  skills: string[];
+  missingSkills: string[];
+  dimensions: { semantic: number; skills: number; experience: number; education: number; domain: number; career: number; availability: number };
 }

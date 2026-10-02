@@ -12,7 +12,6 @@ const recruiterMenus = [
   { name: "Candidates", icon: Users, href: "/candidates" },
   { name: "AI rankings", icon: Trophy, href: "/rankings" },
   { name: "Analytics", icon: BarChart3, href: "/analytics" },
-  { name: "Demo & results", icon: Trophy, href: "/demo" },
   { name: "Import resume", icon: Upload, href: "/upload-resume" },
   { name: "Settings", icon: Settings, href: "/settings" },
 ];

@@ -1,36 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getRecruiterAnalytics } from "@/services/analytics.service";
-import { auth } from "@/auth";
+import { NextRequest, NextResponse } from 'next/server';
+import { getRecruiterAnalytics } from '@/services/analytics.service';
+import { requireRecruiter } from '@/lib/recruiter-access';
+import { AppError } from '@/core/errors';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const role = (session.user as any).role;
-    if (role !== "recruiter" && role !== "admin") {
-      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-    }
-
-    const { searchParams } = new URL(req.url);
-    const jobId = searchParams.get("jobId") || undefined;
-    const startDate = searchParams.get("startDate") || undefined;
-    const endDate = searchParams.get("endDate") || undefined;
-
-    const analyticsData = await getRecruiterAnalytics({
-      jobId,
-      startDate,
-      endDate,
-    });
-
-    return NextResponse.json(analyticsData, { status: 200 });
-  } catch (error: any) {
-    console.error("Fetch Recruiter Analytics Error:", error);
-    return NextResponse.json(
-      { message: error.message || "Failed to fetch recruiter analytics" },
-      { status: 500 }
-    );
+    const user = await requireRecruiter();
+    const query = req.nextUrl.searchParams;
+    const startDate = query.get('startDate') || undefined;
+    const endDate = query.get('endDate') || undefined;
+    for (const date of [startDate, endDate]) if (date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date)) throw new AppError('Choose valid dates.', 400);
+    if (startDate && endDate && startDate > endDate) throw new AppError('Start date must be before end date.', 400);
+    return NextResponse.json(await getRecruiterAnalytics({ userId: user.id, admin: user.role === 'admin', jobId: query.get('jobId') || undefined, startDate, endDate }));
+  } catch (error) {
+    console.error('Analytics error:', error);
+    return NextResponse.json({ message: error instanceof AppError ? error.message : 'Unable to load analytics.' }, { status: error instanceof AppError ? error.statusCode : 500 });
   }
 }

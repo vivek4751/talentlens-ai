@@ -1,331 +1,68 @@
-import { prisma } from "@/lib/prisma";
-import { RecruiterAnalyticsFilters, RecruiterAnalyticsData } from "@/types/analytics";
+import { Prisma } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
+import { AppError } from '@/core/errors';
+import { RecruiterAnalyticsFilters, RecruiterAnalyticsData } from '@/types/analytics';
 
-export async function getRecruiterAnalytics(filters: RecruiterAnalyticsFilters = {}): Promise<RecruiterAnalyticsData> {
-  const matchWhere: any = {};
-  const jobWhere: any = {};
-  const candidateWhere: any = {};
+const include = { candidate: { select: { id: true, name: true, currentTitle: true, skills: { select: { name: true } } } }, job: { select: { title: true } } } satisfies Prisma.MatchInclude;
+type AnalyticsMatch = Prisma.MatchGetPayload<{ include: typeof include }>;
+const round = (value: number) => Number(value.toFixed(1));
 
-  if (filters.jobId) {
-    matchWhere.jobId = filters.jobId;
-    jobWhere.id = filters.jobId;
-    candidateWhere.matches = {
-      some: {
-        jobId: filters.jobId
-      }
-    };
-  }
-
-  if (filters.startDate || filters.endDate) {
-    const dateFilter: any = {};
-    if (filters.startDate) {
-      dateFilter.gte = new Date(filters.startDate);
-    }
-    if (filters.endDate) {
-      dateFilter.lte = new Date(filters.endDate);
-    }
-    
-    matchWhere.createdAt = dateFilter;
-    jobWhere.createdAt = dateFilter;
-    candidateWhere.createdAt = dateFilter;
-  }
-
-  // Fetch counts, averages, and distributions
-  const [
-    totalJobs,
-    totalCandidates,
-    totalRankedCandidates,
-    avgScoreRes,
-    strongHireCount,
-    hireCount,
-    considerCount,
-    rejectCount,
-    range0to20,
-    range21to40,
-    range41to60,
-    range61to80,
-    range81to100,
-  ] = await Promise.all([
-    prisma.job.count({ where: jobWhere }),
-    prisma.candidate.count({ where: candidateWhere }),
-    prisma.match.count({ where: matchWhere }),
-    prisma.match.aggregate({
-      where: matchWhere,
-      _avg: {
-        overallScore: true,
-      },
-    }),
-    prisma.match.count({
-      where: {
-        ...matchWhere,
-        overallScore: { gte: 0.8 },
-      },
-    }),
-    prisma.match.count({
-      where: {
-        ...matchWhere,
-        overallScore: { gte: 0.6, lt: 0.8 },
-      },
-    }),
-    prisma.match.count({
-      where: {
-        ...matchWhere,
-        overallScore: { gte: 0.4, lt: 0.6 },
-      },
-    }),
-    prisma.match.count({
-      where: {
-        ...matchWhere,
-        overallScore: { lt: 0.4 },
-      },
-    }),
-    prisma.match.count({
-      where: {
-        ...matchWhere,
-        overallScore: { gte: 0.0, lte: 0.20 },
-      },
-    }),
-    prisma.match.count({
-      where: {
-        ...matchWhere,
-        overallScore: { gt: 0.20, lte: 0.40 },
-      },
-    }),
-    prisma.match.count({
-      where: {
-        ...matchWhere,
-        overallScore: { gt: 0.40, lte: 0.60 },
-      },
-    }),
-    prisma.match.count({
-      where: {
-        ...matchWhere,
-        overallScore: { gt: 0.60, lte: 0.80 },
-      },
-    }),
-    prisma.match.count({
-      where: {
-        ...matchWhere,
-        overallScore: { gt: 0.80, lte: 1.00 },
-      },
-    }),
-  ]);
-
-  const averageMatchScore = avgScoreRes._avg.overallScore 
-    ? Number((avgScoreRes._avg.overallScore * 100).toFixed(1)) 
-    : 0;
-
-  // Top 10 Candidates
-  const topMatches = await prisma.match.findMany({
-    where: matchWhere,
-    orderBy: {
-      overallScore: "desc",
-    },
-    take: 10,
-    include: {
-      candidate: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  });
-
-  const topCandidates = topMatches.map((m) => ({
-    name: m.candidate.name,
-    score: Number((m.overallScore * 100).toFixed(1)),
+export function summarizeMatches(matches: AnalyticsMatch[]) {
+  const ordered = [...matches].sort((a, b) => b.overallScore - a.overallScore || a.id.localeCompare(b.id));
+  const unique = new Map<string, AnalyticsMatch>();
+  for (const match of ordered) if (!unique.has(match.candidateId)) unique.set(match.candidateId, match);
+  const leaderboard = [...unique.values()].map(m => ({
+    id: m.id, candidateId: m.candidateId, name: m.candidate.name, title: m.candidate.currentTitle,
+    jobId: m.jobId, jobTitle: m.job.title, score: round(m.overallScore * 100), status: m.recruiterStatus,
+    skills: m.candidate.skills.map(s => s.name), missingSkills: m.missingSkills,
+    dimensions: { semantic: round(m.semanticSimilarity), skills: round(m.skillMatchScore), experience: round(m.experienceScore), education: round(m.educationScore), domain: round(m.domainScore), career: round(m.careerProgressionScore), availability: round(m.availabilityScore) },
   }));
-
-  // Jobs Overview
-  const jobsWithCounts = await prisma.job.findMany({
-    where: jobWhere,
-    select: {
-      id: true,
-      title: true,
-      _count: {
-        select: {
-          matches: true,
-        },
-      },
-    },
-  });
-
-  const jobsOverview = jobsWithCounts.map((j) => ({
-    title: j.title,
-    candidates: j._count.matches,
-  }));
-
-  // Average Score Per Job
-  const averageScores = await prisma.match.groupBy({
-    by: ["jobId"],
-    where: matchWhere,
-    _avg: {
-      overallScore: true,
-    },
-  });
-
-  const jobIds = averageScores.map((as) => as.jobId);
-  const jobs = await prisma.job.findMany({
-    where: {
-      id: { in: jobIds },
-    },
-    select: {
-      id: true,
-      title: true,
-    },
-  });
-
-  const jobTitleMap = new Map(jobs.map((j) => [j.id, j.title]));
-
-  const averageScorePerJob = averageScores.map((as) => ({
-    title: jobTitleMap.get(as.jobId) || "Unknown Job",
-    averageScore: as._avg.overallScore ? Number((as._avg.overallScore * 100).toFixed(1)) : 0,
-  }));
-
-  // Recent Activity
-  const [recentJobs, recentCandidates, recentMatches, recentStatusUpdates] = await Promise.all([
-    prisma.job.findMany({
-      where: jobWhere,
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      select: {
-        title: true,
-        createdAt: true,
-      },
-    }),
-    prisma.candidate.findMany({
-      where: candidateWhere,
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      select: {
-        name: true,
-        createdAt: true,
-      },
-    }),
-    prisma.match.findMany({
-      where: matchWhere,
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      select: {
-        createdAt: true,
-        job: { select: { title: true } },
-        candidate: { select: { name: true } },
-      },
-    }),
-    prisma.match.findMany({
-      where: {
-        ...matchWhere,
-        recruiterStatus: { not: "PENDING" },
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 5,
-      select: {
-        updatedAt: true,
-        recruiterStatus: true,
-        job: { select: { title: true } },
-        candidate: { select: { name: true } },
-      },
-    }),
-  ]);
-
-  const jobActivities = recentJobs.map((j) => ({
-    type: "JOB_CREATED",
-    description: `Job posting "${j.title}" was created`,
-    timestamp: j.createdAt.toISOString(),
-  }));
-
-  const resumeActivities = recentCandidates.map((c) => ({
-    type: "RESUME_UPLOADED",
-    description: `Resume uploaded for candidate "${c.name}"`,
-    timestamp: c.createdAt.toISOString(),
-  }));
-
-  const rankingActivities = recentMatches.map((m) => ({
-    type: "AI_RANKING_COMPLETED",
-    description: `AI ranking completed for candidate "${m.candidate.name}" on job "${m.job.title}"`,
-    timestamp: m.createdAt.toISOString(),
-  }));
-
-  const statusActivities = recentStatusUpdates.map((m) => ({
-    type: "STATUS_UPDATED",
-    description: `Candidate "${m.candidate.name}" status updated to "${m.recruiterStatus.toLowerCase()}" for "${m.job.title}"`,
-    timestamp: m.updatedAt.toISOString(),
-  }));
-
-  const recentActivity = [
-    ...jobActivities,
-    ...resumeActivities,
-    ...rankingActivities,
-    ...statusActivities,
-  ]
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-    .slice(0, 10);
-
-  // Additional Stats
-  const allScores = await prisma.match.findMany({
-    where: matchWhere,
-    select: { overallScore: true },
-  });
-
-  const scores = allScores.map((m) => m.overallScore * 100).sort((a, b) => a - b);
-  
-  let medianScore = 0;
-  if (scores.length > 0) {
-    const mid = Math.floor(scores.length / 2);
-    medianScore = scores.length % 2 !== 0 
-      ? scores[mid] 
-      : (scores[mid - 1] + scores[mid]) / 2;
-  }
-
-  const highestScore = scores.length > 0 ? scores[scores.length - 1] : 0;
-  const lowestScore = scores.length > 0 ? scores[0] : 0;
-
-  const shortlistedCount = await prisma.match.count({
-    where: {
-      ...matchWhere,
-      recruiterStatus: "SHORTLISTED",
-    },
-  });
-
-  const selectionRate = totalRankedCandidates > 0 
-    ? Number(((shortlistedCount / totalRankedCandidates) * 100).toFixed(1)) 
-    : 0;
-
+  const scores = matches.map(m => m.overallScore * 100).sort((a, b) => a - b);
+  const average = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+  const mid = Math.floor(scores.length / 2);
+  const median = !scores.length ? 0 : scores.length % 2 ? scores[mid] : (scores[mid - 1] + scores[mid]) / 2;
+  const pending = matches.filter(m => m.recruiterStatus === 'PENDING').length;
+  const shortlisted = matches.filter(m => m.recruiterStatus === 'SHORTLISTED').length;
+  const rejected = matches.filter(m => m.recruiterStatus === 'REJECTED').length;
+  const gaps = new Map<string, number>();
+  for (const m of matches) for (const skill of new Set(m.missingSkills.map(s => s.trim().toLowerCase()).filter(Boolean))) gaps.set(skill, (gaps.get(skill) || 0) + 1);
   return {
-    kpis: {
-      totalJobs,
-      totalCandidates,
-      totalRankedCandidates,
-      averageMatchScore,
-      strongHireCount,
-      hireCount,
-      considerCount,
-      rejectCount,
-    },
-    recommendationDistribution: [
-      { name: "Strong Hire", value: strongHireCount, color: "#10B981" },
-      { name: "Hire", value: hireCount, color: "#3B82F6" },
-      { name: "Consider", value: considerCount, color: "#F59E0B" },
-      { name: "Reject", value: rejectCount, color: "#EF4444" },
-    ],
-    scoreDistribution: [
-      { range: "0–20", count: range0to20 },
-      { range: "21–40", count: range21to40 },
-      { range: "41–60", count: range41to60 },
-      { range: "61–80", count: range61to80 },
-      { range: "81–100", count: range81to100 },
-    ],
-    topCandidates,
+    leaderboard,
+    scoreDistribution: Array.from({ length: 5 }, (_, i) => ({ range: i === 4 ? '80–100' : `${i * 20}–<${(i + 1) * 20}`, count: scores.filter(s => s >= i * 20 && (i === 4 ? s <= 100 : s < (i + 1) * 20)).length })),
+    hiringFunnel: [{ name: 'Scored matches', count: matches.length }, { name: 'Reviewed', count: matches.length - pending }, { name: 'Shortlisted', count: shortlisted }],
+    decisions: { pending, shortlisted, rejected },
+    skillGaps: [...gaps].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8).map(([skill, count]) => ({ skill, count })),
+    statistics: { highestScore: round(scores.at(-1) || 0), lowestScore: round(scores[0] || 0), medianScore: round(median), averageScore: round(average), totalRecommendations: matches.length, selectionRate: matches.length ? round(shortlisted / matches.length * 100) : 0, reviewRate: matches.length ? round((matches.length - pending) / matches.length * 100) : 0 },
+  };
+}
+
+export async function getRecruiterAnalytics(filters: RecruiterAnalyticsFilters): Promise<RecruiterAnalyticsData> {
+  if (!filters.userId) throw new AppError('Unauthorized', 401);
+  const scope: Prisma.JobWhereInput = filters.admin ? {} : { userId: filters.userId };
+  if (filters.jobId) scope.id = filters.jobId;
+  const createdAt: Prisma.DateTimeFilter = {};
+  if (filters.startDate) createdAt.gte = new Date(`${filters.startDate}T00:00:00.000Z`);
+  if (filters.endDate) createdAt.lt = new Date(new Date(`${filters.endDate}T00:00:00.000Z`).getTime() + 86400000);
+  const matchWhere: Prisma.MatchWhereInput = { job: scope, ...(filters.startDate || filters.endDate ? { createdAt } : {}) };
+  const [jobs, matches, ownedCandidates] = await Promise.all([
+    prisma.job.findMany({ where: scope, select: { id: true, title: true, createdAt: true } }),
+    prisma.match.findMany({ where: matchWhere, include, orderBy: { overallScore: 'desc' } }),
+    prisma.candidate.count({ where: filters.admin ? {} : { userId: filters.userId } }),
+  ]);
+  const summary = summarizeMatches(matches);
+  const strongHireCount = matches.filter(m => m.overallScore >= .8).length;
+  const hireCount = matches.filter(m => m.overallScore >= .6 && m.overallScore < .8).length;
+  const considerCount = matches.filter(m => m.overallScore >= .4 && m.overallScore < .6).length;
+  const rejectCount = matches.filter(m => m.overallScore < .4).length;
+  const recentActivity = matches.map(m => ({ type: 'MATCH_UPDATED', description: `${m.candidate.name} matched to ${m.job.title} · ${round(m.overallScore * 100)}% fit`, timestamp: m.updatedAt.toISOString() })).sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 10);
+  const jobsOverview = jobs.map(j => ({ id: j.id, title: j.title, candidates: matches.filter(m => m.jobId === j.id).length })).sort((a, b) => b.candidates - a.candidates);
+  return {
+    ...summary,
+    kpis: { totalJobs: jobs.length, totalCandidates: summary.leaderboard.length, totalRankedCandidates: summary.leaderboard.length, totalMatches: matches.length, ownedCandidates, averageMatchScore: summary.statistics.averageScore, strongHireCount, hireCount, considerCount, rejectCount },
+    recommendationDistribution: [{ name: 'Strong fit ≥80', value: strongHireCount, color: '#10B981' }, { name: 'Fit 60–<80', value: hireCount, color: '#3B82F6' }, { name: 'Review 40–<60', value: considerCount, color: '#F59E0B' }, { name: 'Low fit <40', value: rejectCount, color: '#EF4444' }],
+    topCandidates: summary.leaderboard.slice(0, 10).map(c => ({ name: c.name, score: c.score })),
     jobsOverview,
-    averageScorePerJob,
+    averageScorePerJob: jobs.map(j => { const subset = matches.filter(m => m.jobId === j.id); return { id: j.id, title: j.title, averageScore: subset.length ? round(subset.reduce((a, m) => a + m.overallScore * 100, 0) / subset.length) : 0 }; }),
     recentActivity,
-    statistics: {
-      highestScore: Number(highestScore.toFixed(1)),
-      lowestScore: Number(lowestScore.toFixed(1)),
-      medianScore: Number(medianScore.toFixed(1)),
-      averageScore: Number(averageMatchScore.toFixed(1)),
-      totalRecommendations: totalRankedCandidates,
-      selectionRate,
-    },
   };
 }

@@ -55,4 +55,20 @@ describe('resume persistence', () => {
   it('parses empty vector storage as an empty vector', () => {
     expect(MatchingService.parseVectorString('[]')).toEqual([]);
   });
+  it('rejects editing another recruiter profile before calling AI', async () => {
+    mocks.db.user.findUnique.mockResolvedValue({ role: 'recruiter' });
+    mocks.db.candidate.findUnique.mockResolvedValue({ id: 'profile', userId: 'someone-else', candidateId: 'CAND_1234567' });
+    await expect(MatchingService.createCandidateProfile('owner', 'resume', undefined, 'profile')).rejects.toThrow('Forbidden');
+    expect(mocks.parse).not.toHaveBeenCalled();
+    expect(mocks.db.$transaction).not.toHaveBeenCalled();
+  });
+  it('refreshes an owned recruiter profile in place and retains its ID', async () => {
+    mocks.db.user.findUnique.mockResolvedValue({ role: 'recruiter' });
+    mocks.db.candidate.findUnique.mockResolvedValue({ id: 'profile', userId: 'owner', candidateId: 'CAND_1234567', name: 'Old' });
+    mocks.tx.candidate.update.mockResolvedValue({ id: 'profile' });
+    await MatchingService.createCandidateProfile('owner', 'updated resume', undefined, 'profile');
+    expect(mocks.tx.candidate.create).not.toHaveBeenCalled();
+    expect(mocks.tx.candidate.update).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 'profile' } }));
+    expect(MatchingService.runCandidateMatching).toHaveBeenCalledWith('profile');
+  });
 });
