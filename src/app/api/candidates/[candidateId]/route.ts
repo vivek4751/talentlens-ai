@@ -8,10 +8,11 @@ export async function GET(
 ) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const userRole = session.user.role;
     const { candidateId } = await params;
     const lookupId = candidateId === "profile" ? session.user.id : candidateId;
     
@@ -28,6 +29,8 @@ export async function GET(
         education: true,
         careerHistory: true,
         matches: {
+          where: userRole === "recruiter" ? { job: { userId: session.user.id } } : undefined,
+          orderBy: { overallScore: "desc" },
           include: {
             job: true
           }
@@ -40,16 +43,15 @@ export async function GET(
     }
 
     // Role-based access and ownership check
-    const userRole = (session.user as any).role;
     if (userRole === "candidate" && candidate.userId !== session.user.id) {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
     return NextResponse.json(candidate, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Fetch Candidate Error:", error);
     return NextResponse.json(
-      { message: error.message || "Failed to fetch candidate details" },
+      { message: error instanceof Error ? error.message : "Failed to fetch candidate details" },
       { status: 500 }
     );
   }
