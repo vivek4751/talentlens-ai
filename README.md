@@ -29,6 +29,7 @@ Configure environment variables outside source control:
 - `DATABASE_URL`: PostgreSQL connection string with pgvector available; copy the complete URI from your database provider.
 - `AUTH_SECRET` (or the existing `NEXTAUTH_SECRET`): authentication secret.
 - `GEMINI_API_KEY`: needed for normal AI uploads and explanations.
+- `GEMINI_PARSE_MODEL` / `GEMINI_FALLBACK_MODEL`: optional structured-generation routing; defaults to `gemini-3.6-flash` then `gemini-3.5-flash` for exhausted daily quota or repeated temporary failures. An empty fallback value disables fallback. Authentication, invalid-input and missing-key errors are not retried on another model.
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: optional Google sign-in.
 - `MOBILE_AUTH_SECRET`: optional separate secret for mobile tokens.
 

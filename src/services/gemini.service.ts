@@ -44,6 +44,9 @@ export class GeminiService {
                       errorMessage.toLowerCase().includes('overloaded') || 
                       errorMessage.toLowerCase().includes('temporarily unavailable');
 
+        if (is429 && errorMessage.includes('GenerateRequestsPerDay')) {
+          throw new AIError('AI model daily quota reached. Please retry after the quota resets.');
+        }
         if ((is429 || is503) && attempt < 3) {
           const delay = delays[attempt];
           console.warn(`${errorMessagePrefix} failed with transient error ${status || ''} (attempt ${attempt + 1}/4). Retrying in ${delay}ms... Error: ${errorMessage}`);
@@ -59,6 +62,31 @@ export class GeminiService {
       }
     }
     throw new AIError("AI resume parsing is temporarily unavailable. Please try again in a few minutes.");
+  }
+
+  /** Use the same JSON schema on a supported fallback when a model is unavailable. */
+  private static async generateStructuredText(prompt: string, schema: Schema, label: string): Promise<string> {
+    const primary = process.env.GEMINI_PARSE_MODEL || 'gemini-3.6-flash';
+    const fallback = process.env.GEMINI_FALLBACK_MODEL ?? 'gemini-3.5-flash';
+    const models = [...new Set([primary, fallback].filter(Boolean))];
+    for (let index = 0; index < models.length; index++) {
+      const model = this.getClient().getGenerativeModel({
+        model: models[index], generationConfig: { responseMimeType: 'application/json', responseSchema: schema },
+      });
+      try {
+        return await this.runWithRetry(async () => {
+          const result = await model.generateContent(prompt);
+          const text = result.response.text();
+          if (!text) throw new Error('Empty structured response from Gemini.');
+          return text;
+        }, label);
+      } catch (error) {
+        const unavailable = error instanceof AIError && (error.message.includes('temporarily unavailable') || error.message.includes('daily quota reached'));
+        if (!unavailable || index === models.length - 1) throw error;
+        console.warn(`${label}: ${models[index]} unavailable; trying ${models[index + 1]}.`);
+      }
+    }
+    throw new AIError('AI parsing is unavailable. Please retry later.');
   }
 
   /**
@@ -94,15 +122,6 @@ export class GeminiService {
    */
   public static async parseResume(resumeText: string): Promise<ParsedCandidate> {
     try {
-      const client = this.getClient();
-      const model = client.getGenerativeModel({
-        model: 'gemini-3.6-flash',
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: this.getCandidateSchema(),
-        },
-      });
-
       const prompt = `
 You are an expert recruitment parser. Analyze the following candidate resume text and extract all details according to the required schema.
 Format the yearsOfExperience as a number. For education, categorize the school tier as either 'tier_1', 'tier_2', 'tier_3', 'tier_4', or 'unknown' (e.g. tier_1 for IITs, BITS, top tier universities; tier_2 for NITs, respectable state colleges; etc.).
@@ -115,14 +134,7 @@ Resume Text:
 ${resumeText}
       `;
 
-      const responseText = await this.runWithRetry(async () => {
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
-        if (!text) {
-          throw new Error('Empty response received from Gemini during resume parsing.');
-        }
-        return text;
-      }, 'Gemini resume parsing');
+      const responseText = await this.generateStructuredText(prompt, this.getCandidateSchema(), 'Gemini resume parsing');
 
       return JSON.parse(responseText) as ParsedCandidate;
     } catch (error) {
@@ -136,15 +148,6 @@ ${resumeText}
    */
   public static async parseJobDescription(jdText: string): Promise<ParsedJob> {
     try {
-      const client = this.getClient();
-      const model = client.getGenerativeModel({
-        model: 'gemini-3.6-flash',
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: this.getJobSchema(),
-        },
-      });
-
       const prompt = `
 You are an expert recruitment parser. Analyze the following Job Description (JD) text and extract all parameters and preferences into the specified JSON structure.
 Be thorough in extracting required vs. preferred technical skills, educational degrees, and universities (e.g., IIT, NIT, tier 1 colleges).
@@ -154,14 +157,7 @@ Job Description:
 ${jdText}
       `;
 
-      const responseText = await this.runWithRetry(async () => {
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
-        if (!text) {
-          throw new Error('Empty response received from Gemini during job description parsing.');
-        }
-        return text;
-      }, 'Gemini Job Description parsing');
+      const responseText = await this.generateStructuredText(prompt, this.getJobSchema(), 'Gemini Job Description parsing');
 
       return JSON.parse(responseText) as ParsedJob;
     } catch (error) {
@@ -194,15 +190,6 @@ ${jdText}
     improvementSuggestions: string[];
   }> {
     try {
-      const client = this.getClient();
-      const model = client.getGenerativeModel({
-        model: 'gemini-3.6-flash',
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: this.getExplanationSchema(),
-        },
-      });
-
       const prompt = `
 You are an expert recruiter and talent consultant. You need to write an Explainable AI (XAI) feedback report for the candidate based on their matching metrics against the job description.
 Do not use generic empty sentences. Ground your feedback on specific facts (e.g., years of experience, current title, named skills, anomalies, or notice periods).
@@ -234,14 +221,7 @@ Generate:
 5. Improvement Suggestions (Array of strings, actionable suggestions for the candidate)
       `;
 
-      const responseText = await this.runWithRetry(async () => {
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
-        if (!text) {
-          throw new Error('Empty response received from Gemini during explainability report generation.');
-        }
-        return text;
-      }, 'Gemini explainability report generation');
+      const responseText = await this.generateStructuredText(prompt, this.getExplanationSchema(), 'Gemini explainability report generation');
 
       return JSON.parse(responseText);
     } catch (error) {
